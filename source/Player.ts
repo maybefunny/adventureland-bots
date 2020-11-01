@@ -2,7 +2,7 @@ import { AchievementProgressData, CharacterData, ServerData, ActionData, ChestOp
 import { GData, SkillName, BankInfo, ConditionName, MapName, ItemInfo, ItemName, SlotType, MonsterName, SInfo, IPosition, NPCType, BankPackType, TradeSlotType } from "./definitions/adventureland"
 import { Tools } from "./Tools.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
-import { Pathfinder } from "./pathfinder.js"
+import { Pathfinder } from "./Pathfinder.js"
 import { LinkData, NodeData } from "./definitions/pathfinder"
 import { NPC_INTERACTION_DISTANCE, USE_BJARNY_MAGIPORT } from "./constants.js"
 import { DeathModel } from "./database/deaths/deaths.model.js"

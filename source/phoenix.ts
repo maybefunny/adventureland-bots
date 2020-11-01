@@ -5,7 +5,7 @@ import { EntityData } from "./definitions/adventureland-server"
 import { Game } from "./Game.js"
 import { Merchant } from "./Merchant.js"
 import { Mage } from "./Mage.js"
-import { Pathfinder } from "./pathfinder.js"
+import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 
 const region: ServerRegion = "EU"

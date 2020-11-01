@@ -1,5 +1,5 @@
 import { EvalData, GameResponseData } from "./definitions/adventureland-server"
-import { Pathfinder } from "./pathfinder.js"
+import { Pathfinder } from "./Pathfinder.js"
 import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 import { TIMEOUT } from "./Game.js"
 

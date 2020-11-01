@@ -11,7 +11,7 @@ import { Priest } from "./Priest.js"
 import { Merchant } from "./Merchant.js"
 import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 import { Ranger } from "./Ranger.js"
-import { Pathfinder } from "./pathfinder.js"
+import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 
 const region: ServerRegion = "ASIA"

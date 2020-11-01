@@ -4,7 +4,7 @@ import { ServerIdentifier, ServerRegion } from "./definitions/adventureland.js"
 import { Game } from "./Game.js"
 import { Merchant } from "./Merchant.js"
 import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
-import { Pathfinder } from "./pathfinder.js"
+import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 
 const region: ServerRegion = "US"
