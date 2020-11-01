@@ -445,6 +445,9 @@ async function startRanger(bot: Ranger) {
                     for (const bot of [ranger, priest, warrior, merchant]) {
                         bot.entities.delete(targets[0].id)
                     }
+                } else if (bot.canUse("huntersmark")) {
+                    // Mark it if we won't kill it in one shot
+                    await bot.huntersMark(targets[0].id)
                 }
 
                 // If we can do more damage with piercingshot, use that
