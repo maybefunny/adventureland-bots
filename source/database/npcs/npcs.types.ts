@@ -1,5 +1,5 @@
 import { Document, Model } from "mongoose"
-import { ServerRegion, MapName, ServerIdentifier, MonsterName } from "../../definitions/adventureland"
+import { ServerRegion, MapName, ServerIdentifier } from "../../definitions/adventureland"
 
 export interface INPC {
     name: string
@@ -8,7 +8,6 @@ export interface INPC {
     y: number
     serverRegion: ServerRegion
     serverIdentifier: ServerIdentifier
-    type: MonsterName
     lastSeen?: number
 }
 
