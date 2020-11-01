@@ -5,7 +5,7 @@ import { ServerRegion, ServerIdentifier, GData, MapName, MonsterName, SInfo } fr
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityModel } from "./database/entities/entities.model.js"
 import { SEND_ALDATA_INFO, SPECIAL_MONSTERS } from "./constants.js"
-import { NPCModel } from "./database/npcs/npcs.model"
+import { NPCModel } from "./database/npcs/npcs.model.js"
 
 
 export class Observer {
