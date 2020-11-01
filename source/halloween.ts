@@ -25,7 +25,7 @@ let merchant: Merchant
 
 async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promise<MonsterName> {
     // Priority #1: Special Monsters
-    const entities = await EntityModel.find({ $or: [{ type: "mrpumpkin" }, { type: "mrgreen" }], serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
+    const entities = await EntityModel.find({ $or: [{ type: "mrpumpkin" }, { type: "mrgreen" }, { type: "greenjr" }, { type: "jr" }], serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
     for (const entity of entities) {
         // Look in database of entities
         if (!strategy[entity.type]) continue // No strategy
@@ -2857,7 +2857,7 @@ async function run() {
             }
 
             // Look for the lowest hp special monster
-            let bestMonster = await EntityModel.findOne({ $or: [{ type: "mrpumpkin" }, { type: "mrgreen" }], lastSeen: { $gt: Date.now() - 15000 } }).sort({ hp: 1 }).lean().exec()
+            let bestMonster = await EntityModel.findOne({ $or: [{ type: "greenjr" }, { type: "jr" }, { type: "mrpumpkin" }, { type: "mrgreen" }], lastSeen: { $gt: Date.now() - 15000 } }).sort({ hp: 1 }).lean().exec()
             if (!bestMonster) {
                 bestMonster = {
                     type: null,
