@@ -18,6 +18,7 @@ const region: ServerRegion = "EU"
 const identifier: ServerIdentifier = "I"
 
 let ranger: Ranger
+let ranger2: Ranger
 let rangerTarget: MonsterName
 let warrior: Warrior
 let warriorTarget: MonsterName
@@ -1907,7 +1908,7 @@ async function startPriest(bot: Priest) {
             }
 
             if (bot.canUse("partyheal")) {
-                for (const bot of [priest, ranger, warrior, merchant]) {
+                for (const bot of [priest, ranger, ranger2, warrior, merchant]) {
                     if (!bot.party || !bot.party.list.includes(priest.character.id)) continue // Our priest isn't in the party!?
                     if (bot.character.hp < bot.character.max_hp * 0.5) {
                         // Someone in our party has low HP
@@ -2798,7 +2799,7 @@ async function startMerchant(bot: Merchant) {
                         const pack1 = `items${Math.floor((d[0]) / 42)}` as Exclude<BankPackType, "gold">
                         const slot1 = d[0] % 42
                         let withdrew = false
-                        for (let i = 1; i < d.length - 1 && freeSpaces > 2; i++) {
+                        for (let i = 1; i < d.length && freeSpaces > 2; i++) {
                             const pack2 = `items${Math.floor((d[i]) / 42)}` as Exclude<BankPackType, "gold">
                             const slot2 = d[i] % 42
                             const item2 = bot.bank[pack2][slot2]
@@ -2862,9 +2863,7 @@ async function startMerchant(bot: Merchant) {
                 }
 
                 // Withdraw exchangable items
-                for (let i = 0; i < bankItems.length; i++) {
-                    if (freeSpaces < 2) break // Not enough space
-
+                for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
                     const item = bankItems[i]
                     if (!item) continue // No item
 
@@ -2904,7 +2903,7 @@ async function startMerchant(bot: Merchant) {
             }
 
             // Move to our friends if they have lots of items (they'll send them over)
-            for (const friend of [priest, ranger, warrior]) {
+            for (const friend of [priest, ranger, ranger2, warrior]) {
                 // Check if our friend is full
                 let full = true
                 for (const item of friend.character.items) {
