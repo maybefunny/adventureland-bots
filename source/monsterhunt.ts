@@ -14,7 +14,7 @@ import { Ranger } from "./Ranger.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 
-const region: ServerRegion = "ASIA"
+const region: ServerRegion = "EU"
 const identifier: ServerIdentifier = "I"
 
 let ranger: Ranger
@@ -3009,10 +3009,10 @@ async function run() {
             merchant.socket.on("disconnect", async () => { loopMerchant() })
         }
 
-        loopRanger()
-        loopWarrior()
-        loopPriest()
-        loopMerchant()
+        await loopRanger()
+        await loopWarrior()
+        await loopPriest()
+        await loopMerchant()
 
         // Start the bots!
         startRanger(ranger)
