@@ -234,7 +234,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 
             if (hasComputer) {
                 for (let i = 0; i < bot.character.items.length; i++) {
-                    if (bot.isFull) break // We are full
+                    if (bot.isFull()) break // We are full
 
                     const item = bot.character.items[i]
                     if (!item) continue
