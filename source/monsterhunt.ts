@@ -1909,7 +1909,7 @@ async function startPriest(bot: Priest) {
 
             if (bot.canUse("partyheal")) {
                 for (const bot of [priest, ranger, ranger2, warrior, merchant]) {
-                    if (!bot.party || !bot.party.list.includes(priest.character.id)) continue // Our priest isn't in the party!?
+                    if (!bot || !bot.party || !bot.party.list.includes(priest.character.id)) continue // Our priest isn't in the party!?
                     if (bot.character.hp < bot.character.max_hp * 0.5) {
                         // Someone in our party has low HP
                         await priest.partyHeal()
@@ -2904,6 +2904,8 @@ async function startMerchant(bot: Merchant) {
 
             // Move to our friends if they have lots of items (they'll send them over)
             for (const friend of [priest, ranger, ranger2, warrior]) {
+                if (!friend) continue
+
                 // Check if our friend is full
                 let full = true
                 for (const item of friend.character.items) {
