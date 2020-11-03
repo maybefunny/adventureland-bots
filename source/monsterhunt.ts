@@ -1,4 +1,4 @@
-import { ITEMS_TO_BUY, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
+import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityModel } from "./database/entities/entities.model.js"
 import { EntityData, HitData, PlayerData } from "./definitions/adventureland-server.js"
@@ -225,32 +225,32 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
     }
     elixirLoop()
 
-    // async function exchangeLoop() {
-    //     try {
-    //         if (bot.socket.disconnected) return
+    async function exchangeLoop() {
+        try {
+            if (bot.socket.disconnected) return
 
-    //         // TODO: Make bot.canExchange() function and replace the following line with thatF
-    //         const hasComputer = bot.locateItem("computer") !== undefined
+            // TODO: Make bot.canExchange() function and replace the following line with thatF
+            const hasComputer = bot.locateItem("computer") !== undefined
 
-    //         if (hasComputer) {
-    //             for (let i = 0; i < bot.character.items.length; i++) {
-    //                 const item = bot.character.items[i]
-    //                 if (!item) continue
-    //                 if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Don't want / can't exchange
+            if (hasComputer) {
+                for (let i = 0; i < bot.character.items.length; i++) {
+                    const item = bot.character.items[i]
+                    if (!item) continue
+                    if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Don't want / can't exchange
 
-    //                 const gInfo = bot.G.items[item.name]
-    //                 if (gInfo.e !== undefined && item.q < gInfo.e) continue // Don't have enough to exchange
+                    const gInfo = bot.G.items[item.name]
+                    if (gInfo.e !== undefined && item.q < gInfo.e) continue // Don't have enough to exchange
 
-    //                 await bot.exchange(i)
-    //             }
-    //         }
-    //     } catch (e) {
-    //         console.error(e)
-    //     }
+                    await bot.exchange(i)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
 
-    //     setTimeout(async () => { exchangeLoop() }, 250)
-    // }
-    // exchangeLoop()
+        setTimeout(async () => { exchangeLoop() }, 250)
+    }
+    exchangeLoop()
 
     async function healLoop() {
         try {
@@ -2774,15 +2774,15 @@ async function startMerchant(bot: Merchant) {
                 }
 
                 // Store information about everything in our bank to use it later to find upgradable stuff
-                const bankInfo: ItemInfo[] = []
+                const bankItems: ItemInfo[] = []
                 for (let i = 0; i <= 7; i++) {
                     const bankPack = `items${i}` as Exclude<BankPackType, "gold">
                     for (const item of bot.bank[bankPack]) {
-                        bankInfo.push(item)
+                        bankItems.push(item)
                     }
                 }
                 let freeSpaces = bot.character.isize - bot.character.esize
-                const duplicates = bot.locateDuplicateItems(bankInfo)
+                const duplicates = bot.locateDuplicateItems(bankItems)
 
                 // Withdraw compoundable & upgradable things
                 for (const iN in duplicates) {
@@ -2857,6 +2857,25 @@ async function startMerchant(bot: Merchant) {
                             break
                         }
                     }
+                }
+
+                // Withdraw exchangable items
+                for (let i = 0; i < bankItems.length; i++) {
+                    if (freeSpaces < 2) break // Not enough space
+
+                    const item = bankItems[i]
+                    if (!item) continue // No item
+
+                    if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Not exchangable
+
+                    const gInfo = bot.G.items[item.name]
+                    if (item.q < gInfo.e) continue // Not enough to exchange
+
+                    // Withdraw the item
+                    const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackType, "gold">
+                    const slot = i % 42
+                    await bot.withdrawItem(pack, slot)
+                    freeSpaces--
                 }
 
                 setTimeout(async () => { moveLoop() }, 250)
