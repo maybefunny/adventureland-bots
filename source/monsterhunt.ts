@@ -2988,30 +2988,31 @@ async function run() {
     await Promise.all([Game.loginJSONFile("../credentials.json"), Pathfinder.prepare()])
 
     try {
-        ranger = await Game.startRanger("earthiverse", region, identifier)
-        warrior = await Game.startWarrior("earthWar", region, identifier)
-        priest = await Game.startPriest("earthPri", region, identifier)
-        merchant = await Game.startMerchant("earthMer", region, identifier)
-
-        ranger.socket.on("disconnect", async () => {
-            await Game.stopCharacter("earthiverse")
+        const loopRanger = async () => {
+            if (ranger) await Game.stopCharacter("earthiverse")
             ranger = await Game.startRanger("earthiverse", region, identifier)
-        })
-
-        warrior.socket.on("disconnect", async () => {
-            await Game.stopCharacter("earthWar")
+            ranger.socket.on("disconnect", async () => { loopRanger() })
+        }
+        const loopWarrior = async () => {
+            if (warrior) await Game.stopCharacter("earthWar")
             warrior = await Game.startWarrior("earthWar", region, identifier)
-        })
-
-        priest.socket.on("disconnect", async () => {
-            await Game.stopCharacter("earthPri")
+            warrior.socket.on("disconnect", async () => { loopWarrior() })
+        }
+        const loopPriest = async () => {
+            if (priest) await Game.stopCharacter("earthPri")
             priest = await Game.startPriest("earthPri", region, identifier)
-        })
-
-        merchant.socket.on("disconnect", async () => {
-            await Game.stopCharacter("earthMer")
+            priest.socket.on("disconnect", async () => { loopPriest() })
+        }
+        const loopMerchant = async () => {
+            if (merchant) await Game.stopCharacter("earthMer")
             merchant = await Game.startMerchant("earthMer", region, identifier)
-        })
+            merchant.socket.on("disconnect", async () => { loopMerchant() })
+        }
+
+        loopRanger()
+        loopWarrior()
+        loopPriest()
+        loopMerchant()
 
         // Start the bots!
         startRanger(ranger)
