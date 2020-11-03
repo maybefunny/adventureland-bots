@@ -234,6 +234,8 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 
             if (hasComputer) {
                 for (let i = 0; i < bot.character.items.length; i++) {
+                    if (bot.isFull) break // We are full
+
                     const item = bot.character.items[i]
                     if (!item) continue
                     if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Don't want / can't exchange
@@ -2887,6 +2889,7 @@ async function startMerchant(bot: Merchant) {
 
             // Check for special monsters every 15 minutes
             if (lastSpecialCheckTime < Date.now() - 900000) {
+                await bot.closeMerchantStand()
                 const locations: NodeData[] = []
                 locations.push(...bot.locateMonsters("mvampire")) // Also checks goldenbat
                 locations.push(...bot.locateMonsters("fvampire"))
