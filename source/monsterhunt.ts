@@ -123,9 +123,9 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                     }
 
                     // Buy if we can resell to NPC for more money
-                    const gInfo = bot.G.items[item.name]
-                    if ((item.price < gInfo.g * 0.6) // Item is lower price than G.
-                        || ITEMS_TO_BUY.includes(item.name) && item.price <= gInfo.g // Item is the same, or lower price than the NPC would sell for, and we want it.
+                    const cost = await Tools.calculateCost(item)
+                    if ((item.price < cost * 0.6) // Item is lower price than G, which means we could sell it to an NPC straight away and make a profit...
+                        || ITEMS_TO_BUY.includes(item.name) && item.price <= cost // Item is the same, or lower price than the NPC would sell for, and we want it.
                     ) {
                         await bot.buyFromMerchant(player.id, slot, item.rid, q)
                     }
@@ -189,7 +189,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 const itemPoss = duplicates[itemName]
                 const itemInfo = bot.character.items[itemPoss[0]]
                 if (itemInfo.level >= 4) continue // We don't want to compound past level 4 automatically.
-                if (ITEMS_TO_SELL[itemName]) continue // Don't compound items we want to sell
+                if (ITEMS_TO_SELL[itemName] && !itemInfo.p && itemInfo.level < ITEMS_TO_SELL[itemName]) continue // Don't compound items we want to sell unless they're special
 
                 // Figure out the scroll we need to upgrade
                 const grade = await Tools.calculateItemGrade(itemInfo)
@@ -212,6 +212,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
     async function elixirLoop() {
         try {
             if (bot.socket.disconnected) return
+            if (bot.character.ctype == "merchant") return // Don't buy or equip an elixir if we're a merchant.
 
             if (!bot.character.slots.elixir) {
                 let luckElixir = bot.locateItem("elixirluck")
@@ -304,7 +305,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
             console.error(e)
         }
 
-        setTimeout(async () => { lootLoop() }, 500)
+        setTimeout(async () => { lootLoop() }, 250)
     }
     lootLoop()
 
@@ -387,7 +388,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 const itemPos = duplicates[itemName][0]
                 const itemInfo = bot.character.items[itemPos]
                 if (itemInfo.level >= 8) continue // We don't want to upgrade past level 8 automatically.
-                if (ITEMS_TO_SELL[itemName]) continue // Don't upgrade items we want to sell
+                if (ITEMS_TO_SELL[itemName] && !itemInfo.p && itemInfo.level < ITEMS_TO_SELL[itemName]) continue // Don't upgrade items we want to sell unless it's special
 
                 // Figure out the scroll we need to upgrade
                 const grade = await Tools.calculateItemGrade(itemInfo)
@@ -470,6 +471,9 @@ async function startRanger(bot: Ranger) {
                     for (const bot of [ranger, priest, warrior, merchant]) {
                         bot.entities.delete(targets[0].id)
                     }
+                } else if (bot.canUse("huntersmark")) {
+                    // Mark it if we won't kill it in one shot
+                    await bot.huntersMark(targets[0].id)
                 }
 
                 // If we can do more damage with piercingshot, use that
@@ -1252,7 +1256,7 @@ async function startPriest(bot: Priest) {
     const defaultAttackStrategy = async (mtype: MonsterName): Promise<number> => {
         if (bot.canUse("attack")) {
             // Heal party members if they are close
-            let target: PlayerData
+            let target: PlayerData | EntityData
             for (const [id, player] of bot.players) {
                 if (![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(id)) continue // Don't heal other players
                 if (player.hp > player.max_hp * 0.8) continue // Lots of health, no need to heal
@@ -1288,13 +1292,19 @@ async function startPriest(bot: Priest) {
                     }
                 }
 
-                if (targets.length) {
+                if (targets.length > 0) {
                     // Remove from other characters if we're going to kill it
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
                         for (const bot of [ranger, priest, warrior, merchant]) {
                             bot.entities.delete(targets[0].id)
                         }
                     }
+
+                    if (bot.canUse("curse")
+                        && !(targets[0] as EntityData).immune) {
+                        bot.curse(targets[0].id)
+                    }
+
                     await bot.attack(targets[0].id)
                 }
             }
@@ -1324,7 +1334,8 @@ async function startPriest(bot: Priest) {
             }
 
             if (target) {
-                if (bot.canUse("curse")) {
+                if (bot.canUse("curse")
+                    && !(target as EntityData).immune) {
                     bot.curse(target.id)
                 }
 

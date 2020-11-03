@@ -1072,8 +1072,8 @@ async function startRanger(bot: Ranger) {
 
                         // If we can kill enough monsters in one shot, let's try to do that
                         const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
-                        if (entity.hp < minimumDamage * bot.G.skills["3shot"].damage_multiplier) threeshotTargets.push(id)
-                        if (entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier) fiveshotTargets.push(id)
+                        if (!entity.immune && entity.hp < minimumDamage * bot.G.skills["3shot"].damage_multiplier) threeshotTargets.push(id)
+                        if (!entity.immune && entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier) fiveshotTargets.push(id)
                     }
 
                     if (fiveshotTargets.length >= 5 && bot.canUse("5shot")) {
