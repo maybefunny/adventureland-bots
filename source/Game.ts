@@ -193,6 +193,7 @@ export class Game {
     }
 
     public static async stopCharacter(characterName: string): Promise<void> {
+        if (!this.players[characterName]) return
         await this.players[characterName].disconnect()
         delete this.players[characterName]
     }

@@ -3013,32 +3013,52 @@ async function run() {
 
     try {
         const loopRanger = async () => {
-            if (ranger) await Game.stopCharacter("earthiverse")
-            ranger = await Game.startRanger("earthiverse", region, identifier)
-            ranger.socket.on("disconnect", async () => { loopRanger() })
-            startRanger(ranger)
-            generalBotStuff(ranger)
+            try {
+                await Game.stopCharacter("earthiverse")
+                ranger = await Game.startRanger("earthiverse", region, identifier)
+                ranger.socket.on("disconnect", async () => { await loopRanger() })
+                startRanger(ranger)
+                generalBotStuff(ranger)
+            } catch (e) {
+                await Game.stopCharacter("earthiverse")
+                setTimeout(async () => { await loopRanger() }, 5000)
+            }
         }
         const loopWarrior = async () => {
-            if (warrior) await Game.stopCharacter("earthWar")
-            warrior = await Game.startWarrior("earthWar", region, identifier)
-            warrior.socket.on("disconnect", async () => { loopWarrior() })
-            startWarrior(warrior)
-            generalBotStuff(warrior)
+            try {
+                await Game.stopCharacter("earthWar")
+                warrior = await Game.startWarrior("earthWar", region, identifier)
+                warrior.socket.on("disconnect", async () => { await loopWarrior() })
+                startWarrior(warrior)
+                generalBotStuff(warrior)
+            } catch (e) {
+                await Game.stopCharacter("earthWar")
+                setTimeout(async () => { await loopWarrior() }, 5000)
+            }
         }
         const loopPriest = async () => {
-            if (priest) await Game.stopCharacter("earthPri")
-            priest = await Game.startPriest("earthPri", region, identifier)
-            priest.socket.on("disconnect", async () => { loopPriest() })
-            startPriest(priest)
-            generalBotStuff(priest)
+            try {
+                await Game.stopCharacter("earthPri")
+                priest = await Game.startPriest("earthPri", region, identifier)
+                priest.socket.on("disconnect", async () => { await loopPriest() })
+                startPriest(priest)
+                generalBotStuff(priest)
+            } catch (e) {
+                await Game.stopCharacter("earthPri")
+                setTimeout(async () => { await loopPriest() }, 5000)
+            }
         }
         const loopMerchant = async () => {
-            if (merchant) await Game.stopCharacter("earthMer")
-            merchant = await Game.startMerchant("earthMer", region, identifier)
-            merchant.socket.on("disconnect", async () => { loopMerchant() })
-            startMerchant(merchant)
-            generalBotStuff(merchant)
+            try {
+                await Game.stopCharacter("earthMer")
+                merchant = await Game.startMerchant("earthMer", region, identifier)
+                merchant.socket.on("disconnect", async () => { await loopMerchant() })
+                startMerchant(merchant)
+                generalBotStuff(merchant)
+            } catch (e) {
+                await Game.stopCharacter("earthMer")
+                setTimeout(async () => { await loopMerchant() }, 5000)
+            }
         }
 
         await loopRanger()
