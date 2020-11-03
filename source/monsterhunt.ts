@@ -1924,6 +1924,18 @@ async function startPriest(bot: Priest) {
         setTimeout(async () => { partyHealLoop() }, 250)
     }
     partyHealLoop()
+
+    async function darkBlessingLoop() {
+        try {
+            if (bot.socket.disconnected) return
+            if (bot.canUse("darkblessing")) await bot.darkBlessing()
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { darkBlessingLoop() }, Math.max(10, bot.getCooldown("darkblessing")))
+    }
+    darkBlessingLoop()
 }
 
 async function startWarrior(bot: Warrior) {
