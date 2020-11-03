@@ -2993,6 +2993,26 @@ async function run() {
         priest = await Game.startPriest("earthPri", region, identifier)
         merchant = await Game.startMerchant("earthMer", region, identifier)
 
+        ranger.socket.on("disconnect", async () => {
+            await Game.stopCharacter("earthiverse")
+            ranger = await Game.startRanger("earthiverse", region, identifier)
+        })
+
+        warrior.socket.on("disconnect", async () => {
+            await Game.stopCharacter("earthWar")
+            warrior = await Game.startWarrior("earthWar", region, identifier)
+        })
+
+        priest.socket.on("disconnect", async () => {
+            await Game.stopCharacter("earthPri")
+            priest = await Game.startPriest("earthPri", region, identifier)
+        })
+
+        merchant.socket.on("disconnect", async () => {
+            await Game.stopCharacter("earthMer")
+            merchant = await Game.startMerchant("earthMer", region, identifier)
+        })
+
         // Start the bots!
         startRanger(ranger)
         startWarrior(warrior)
