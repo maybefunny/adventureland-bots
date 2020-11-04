@@ -783,6 +783,12 @@ async function startRanger(bot: Ranger) {
             equipment: { mainhand: "hbow" },
             attackWhileIdle: true
         },
+        bigbird: {
+            attack: async () => { return await defaultAttackStrategy("bigbird") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 1343, y: 248 }) },
+            equipment: { mainhand: "firebow", orb: "jacko" },
+            attackWhileIdle: false
+        },
         boar: {
             attack: async () => { return await defaultAttackStrategy("boar") },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 20, y: -1109 }) },
@@ -959,6 +965,12 @@ async function startRanger(bot: Ranger) {
             attack: async () => { return await defaultAttackStrategy("snake") },
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -82, y: 1901 }) },
             equipment: { mainhand: "hbow", orb: "orbg" },
+            attackWhileIdle: true
+        },
+        snowman: {
+            attack: async () => { return await defaultAttackStrategy("snowman") },
+            move: async () => { return await specialMonsterMoveStrategy("snowman") },
+            equipment: { mainhand: "hbow", orb: "jacko" },
             attackWhileIdle: true
         },
         spider: {
@@ -1461,6 +1473,12 @@ async function startPriest(bot: Priest) {
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 152, y: 1487 }) },
             attackWhileIdle: true
         },
+        bigbird: {
+            attack: async () => { return await defaultAttackStrategy("bigbird") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 1363, y: 248 }) },
+            equipment: { orb: "jacko" },
+            attackWhileIdle: false
+        },
         boar: {
             attack: async () => { return await defaultAttackStrategy("boar") },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 40, y: -1109 }) },
@@ -1632,6 +1650,12 @@ async function startPriest(bot: Priest) {
             attack: async () => { return await defaultAttackStrategy("snake") },
             move: async () => { return await holdPositionMoveStrategy({ map: "main", x: -62, y: 1901 }) },
             equipment: { orb: "orbg" },
+            attackWhileIdle: true
+        },
+        snowman: {
+            attack: async () => { return await defaultAttackStrategy("snowman") },
+            move: async () => { return await specialMonsterMoveStrategy("snowman") },
+            equipment: { orb: "jacko" },
             attackWhileIdle: true
         },
         spider: {
@@ -2258,6 +2282,12 @@ async function startWarrior(bot: Warrior) {
             equipment: { mainhand: "bataxe", orb: "jacko" },
             attackWhileIdle: true
         },
+        bigbird: {
+            attack: async () => { return await defaultAttackStrategy("bigbird") },
+            move: async () => { return await holdPositionMoveStrategy({ map: "main", x: 1323, y: 248 }) },
+            equipment: { mainhand: "basher", orb: "jacko" },
+            attackWhileIdle: false
+        },
         boar: {
             attack: async () => { return await defaultAttackStrategy("boar") },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 0, y: -1109 }) },
@@ -2423,6 +2453,12 @@ async function startWarrior(bot: Warrior) {
             attack: async () => { return await defaultAttackStrategy("snake") },
             move: async () => { return await nearbyMonstersMoveStrategy({ map: "main", x: -102, y: 1901 }, "snake") },
             equipment: { mainhand: "bataxe", orb: "orbg" },
+            attackWhileIdle: true
+        },
+        snowman: {
+            attack: async () => { return await defaultAttackStrategy("greenjr") },
+            move: async () => { return await specialMonsterMoveStrategy("greenjr") },
+            equipment: { mainhand: "bataxe", orb: "jacko" },
             attackWhileIdle: true
         },
         spider: {
