@@ -2456,8 +2456,8 @@ async function startWarrior(bot: Warrior) {
             attackWhileIdle: true
         },
         snowman: {
-            attack: async () => { return await defaultAttackStrategy("greenjr") },
-            move: async () => { return await specialMonsterMoveStrategy("greenjr") },
+            attack: async () => { return await defaultAttackStrategy("snowman") },
+            move: async () => { return await specialMonsterMoveStrategy("snowman") },
             equipment: { mainhand: "bataxe", orb: "jacko" },
             attackWhileIdle: true
         },
