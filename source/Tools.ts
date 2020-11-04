@@ -122,6 +122,7 @@ export class Tools {
      * @param entity The entity to check
      */
     public static willBurnToDeath(entity: EntityData): boolean {
+        if (entity["1hp"]) return false
         if (entity.s.burned) {
             const burnTime = Math.max(0, (entity.s.burned.ms - 500)) / 1000
             const burnDamage = burnTime * entity.s.burned.intensity
@@ -136,6 +137,7 @@ export class Tools {
      * @param projectiles 
      */
     public static willDieToProjectiles(entity: EntityData, projectiles: Map<string, ActionData>): boolean {
+        if (entity["1hp"]) return false
         let incomingProjectileDamage = 0
         for (const projectile of projectiles.values()) {
             if (projectile.target == entity.id) incomingProjectileDamage += projectile.damage * 0.9
