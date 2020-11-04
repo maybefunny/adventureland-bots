@@ -328,6 +328,9 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 
             if (!bot.party) {
                 bot.sendPartyRequest(merchant.character.id)
+            } else if (bot.party.list[0] !== "earthMer") {
+                bot.leaveParty()
+                bot.sendPartyRequest(merchant.character.id)
             }
         } catch (e) {
             console.error(e)
