@@ -133,11 +133,12 @@ export class Tools {
 
     /**
      * Returns true if the entity will die to the already incoming projectiles
+     * TODO: Improve to check for damage types for reflection and evasion
      * @param entity 
      * @param projectiles 
      */
     public static willDieToProjectiles(entity: EntityData, projectiles: Map<string, ActionData>): boolean {
-        if (entity["1hp"]) return false
+        if (entity["1hp"] || entity.evasion || entity.reflection) return false
         let incomingProjectileDamage = 0
         for (const projectile of projectiles.values()) {
             if (projectile.target == entity.id) incomingProjectileDamage += projectile.damage * 0.9
