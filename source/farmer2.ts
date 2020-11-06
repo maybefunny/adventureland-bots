@@ -12,8 +12,8 @@ import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 import { Mage } from "./Mage.js"
 
-const region: ServerRegion = "ASIA"
-const identifier: ServerIdentifier = "I"
+const region: ServerRegion = "US"
+const identifier: ServerIdentifier = "III"
 
 let earthiverse: Ranger
 let earthRan2: Ranger
