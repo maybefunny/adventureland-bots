@@ -1154,8 +1154,7 @@ async function startRanger(bot: Ranger) {
         try {
             if (bot.socket.disconnected) return
 
-            const merchantHasSpace = merchant.character.esize < merchant.character.isize
-            if (!merchantHasSpace) {
+            if (!merchant.isFull()) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
             }
@@ -1767,8 +1766,7 @@ async function startPriest(bot: Priest) {
         try {
             if (bot.socket.disconnected) return
 
-            const merchantHasSpace = merchant.character.esize < merchant.character.isize
-            if (!merchantHasSpace) {
+            if (!merchant.isFull()) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
             }
@@ -2518,8 +2516,7 @@ async function startWarrior(bot: Warrior) {
         try {
             if (bot.socket.disconnected) return
 
-            const merchantHasSpace = merchant.character.esize < merchant.character.isize
-            if (!merchantHasSpace) {
+            if (!merchant.isFull()) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
             }

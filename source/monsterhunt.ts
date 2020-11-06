@@ -14,11 +14,10 @@ import { Ranger } from "./Ranger.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 
-const region: ServerRegion = "EU"
+const region: ServerRegion = "US"
 const identifier: ServerIdentifier = "I"
 
 let ranger: Ranger
-let ranger2: Ranger
 let rangerTarget: MonsterName
 let warrior: Warrior
 let warriorTarget: MonsterName
@@ -72,11 +71,12 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
         }
     })
 
+    const pontyLocations = bot.locateNPCs("secondhands")
     async function buyLoop() {
         try {
             if (bot.socket.disconnected) return
 
-            if (bot.hasItem("computer")) {
+            if (bot.canBuy("hpot1")) {
                 // Buy HP Pots
                 const numHpot1 = bot.countItem("hpot1")
                 if (numHpot1 < 1000) await bot.buy("hpot1", 1000 - numHpot1)
@@ -86,7 +86,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                 if (numMpot1 < 1000) await bot.buy("mpot1", 1000 - numMpot1)
             }
 
-            for (const ponty of bot.locateNPCs("secondhands")) {
+            for (const ponty of pontyLocations) {
                 if (Tools.distance(bot.character, ponty) > NPC_INTERACTION_DISTANCE) continue
                 const pontyItems = await bot.getPontyItems()
                 for (const item of pontyItems) {
@@ -328,7 +328,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 
             if (!bot.party) {
                 bot.sendPartyRequest(merchant.character.id)
-            } else if (bot.party.list[0] !== "earthMer") {
+            } else if (bot.party.list[0] !== merchant.character.id) {
                 bot.leaveParty()
                 bot.sendPartyRequest(merchant.character.id)
             }
@@ -1241,8 +1241,7 @@ async function startRanger(bot: Ranger) {
         try {
             if (bot.socket.disconnected) return
 
-            const merchantHasSpace = merchant.character.esize < merchant.character.isize
-            if (!merchantHasSpace) {
+            if (!merchant || merchant.isFull()) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
             }
@@ -1513,7 +1512,7 @@ async function startPriest(bot: Priest) {
             attackWhileIdle: true
         },
         fireroamer: {
-            attack: async () => { return await tankAttackStrategy("fireroamer", "earthWar") },
+            attack: async () => { return await tankAttackStrategy("fireroamer", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: 180, y: -675 }) },
             equipment: { orb: "jacko" }
         },
@@ -1866,8 +1865,7 @@ async function startPriest(bot: Priest) {
         try {
             if (bot.socket.disconnected) return
 
-            const merchantHasSpace = merchant.character.esize < merchant.character.isize
-            if (!merchantHasSpace) {
+            if (!merchant || merchant.isFull()) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
             }
@@ -1946,7 +1944,7 @@ async function startPriest(bot: Priest) {
             }
 
             if (bot.canUse("partyheal")) {
-                for (const bot of [priest, ranger, ranger2, warrior, merchant]) {
+                for (const bot of [priest, ranger, warrior, merchant]) {
                     if (!bot || !bot.party || !bot.party.list.includes(priest.character.id)) continue // Our priest isn't in the party!?
                     if (bot.character.hp < bot.character.max_hp * 0.5) {
                         // Someone in our party has low HP
@@ -2658,8 +2656,7 @@ async function startWarrior(bot: Warrior) {
         try {
             if (bot.socket.disconnected) return
 
-            const merchantHasSpace = merchant.character.esize < merchant.character.isize
-            if (!merchantHasSpace) {
+            if (!merchant || merchant.isFull()) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
             }
@@ -2965,7 +2962,7 @@ async function startMerchant(bot: Merchant) {
             }
 
             // Move to our friends if they have lots of items (they'll send them over)
-            for (const friend of [priest, ranger, ranger2, warrior]) {
+            for (const friend of [priest, ranger, warrior]) {
                 if (!friend) continue
 
                 // Check if our friend is full
@@ -3003,7 +3000,7 @@ async function startMerchant(bot: Merchant) {
 
             // Find other characters that need mluck and go find them
             if (bot.canUse("mluck")) {
-                const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": "earthMer" } }] }).lean().exec()
+                const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": merchant.character.id } }] }).lean().exec()
                 for (const character of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
                     await bot.closeMerchantStand()
@@ -3047,55 +3044,55 @@ async function startMerchant(bot: Merchant) {
     tradeLoop()
 }
 
-async function run() {
+async function run(rangerName: string, warriorName: string, priestName: string, merchantName: string) {
     await Promise.all([Game.loginJSONFile("../credentials.json"), Pathfinder.prepare()])
 
     try {
         const loopRanger = async () => {
             try {
-                await Game.stopCharacter("earthiverse")
-                ranger = await Game.startRanger("earthiverse", region, identifier)
+                await Game.stopCharacter(rangerName)
+                ranger = await Game.startRanger(rangerName, region, identifier)
                 ranger.socket.on("disconnect", async () => { await loopRanger() })
                 startRanger(ranger)
                 generalBotStuff(ranger)
             } catch (e) {
-                await Game.stopCharacter("earthiverse")
+                await Game.stopCharacter(rangerName)
                 setTimeout(async () => { await loopRanger() }, 5000)
             }
         }
         const loopWarrior = async () => {
             try {
-                await Game.stopCharacter("earthWar")
-                warrior = await Game.startWarrior("earthWar", region, identifier)
+                await Game.stopCharacter(warriorName)
+                warrior = await Game.startWarrior(warriorName, region, identifier)
                 warrior.socket.on("disconnect", async () => { await loopWarrior() })
                 startWarrior(warrior)
                 generalBotStuff(warrior)
             } catch (e) {
-                await Game.stopCharacter("earthWar")
+                await Game.stopCharacter(warriorName)
                 setTimeout(async () => { await loopWarrior() }, 5000)
             }
         }
         const loopPriest = async () => {
             try {
-                await Game.stopCharacter("earthPri")
-                priest = await Game.startPriest("earthPri", region, identifier)
+                await Game.stopCharacter(priestName)
+                priest = await Game.startPriest(priestName, region, identifier)
                 priest.socket.on("disconnect", async () => { await loopPriest() })
                 startPriest(priest)
                 generalBotStuff(priest)
             } catch (e) {
-                await Game.stopCharacter("earthPri")
+                await Game.stopCharacter(priestName)
                 setTimeout(async () => { await loopPriest() }, 5000)
             }
         }
         const loopMerchant = async () => {
             try {
-                await Game.stopCharacter("earthMer")
-                merchant = await Game.startMerchant("earthMer", region, identifier)
+                await Game.stopCharacter(merchantName)
+                merchant = await Game.startMerchant(merchantName, region, identifier)
                 merchant.socket.on("disconnect", async () => { await loopMerchant() })
                 startMerchant(merchant)
                 generalBotStuff(merchant)
             } catch (e) {
-                await Game.stopCharacter("earthMer")
+                await Game.stopCharacter(merchantName)
                 setTimeout(async () => { await loopMerchant() }, 5000)
             }
         }
@@ -3108,4 +3105,4 @@ async function run() {
         await Game.disconnect(false)
     }
 }
-run()
+run("earthiverse", "earthWar", "earthPri", "earthMer")
