@@ -821,11 +821,31 @@ async function startWarrior(bot: Warrior) {
                     await bot.attack(targets[0].id)
                 }
             }
+
+            if (bot.canUse("cleave")) {
+                const targets: EntityData[] = []
+                for (const [, entity] of bot.entities) {
+                    if (entity.cooperative !== true && entity.target && entity.target !== bot.character.id) continue // It's targeting someone else
+                    if (Tools.distance(bot.character, entity) > bot.G.skills.cleave.range) continue // Only attack those in range
+
+                    // If the target will die to incoming projectiles, ignore it
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
+
+                    targets.push(entity)
+                }
+
+                if (targets.length) {
+                    await bot.cleave()
+                }
+            }
         } catch (e) {
             console.error(e)
         }
 
-        setTimeout(async () => { attackLoop() }, 250)
+        setTimeout(async () => { attackLoop() }, Math.max(10, Math.min(bot.getCooldown("attack"), bot.getCooldown("cleave"))))
     }
     attackLoop()
 
