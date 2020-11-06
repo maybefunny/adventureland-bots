@@ -1,4 +1,4 @@
-import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
+import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MAGE_ITEMS_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityData, HitData } from "./definitions/adventureland-server.js"
 import { BankPackType, ItemInfo, ItemName, MonsterName, ServerIdentifier, ServerRegion, TradeSlotType } from "./definitions/adventureland.js"
@@ -760,7 +760,7 @@ async function startMage(bot: Mage) {
                 if (extraGold > 0) await bot.sendGold(earthMer3.character.id, extraGold)
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
-                    if (!item || PRIEST_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
+                    if (!item || MAGE_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
                     await bot.sendItem(earthMer3.character.id, i, item.q)
                 }

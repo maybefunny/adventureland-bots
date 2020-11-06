@@ -81,6 +81,21 @@ export const ITEMS_TO_SELL: ItemLevelInfo = {
     "gphelmet": 2, "phelmet": 2
 }
 
+export const MAGE_ITEMS_TO_HOLD: ItemName[] = [
+    // Things we keep on ourselves
+    "computer", "tracker", "stand0",
+    // Potions
+    "hpot0", "hpot1", "mpot0", "mpot1",
+    // Jacko
+    "jacko",
+    // Weapons
+    "firestaff",
+    // Shields
+    "lantern", "shield", "sshield",
+    // Orbs
+    "orbg", "orbofint", "wbook1"
+]
+
 export const MERCHANT_ITEMS_TO_HOLD: ItemName[] = [
     // Things we keep on ourselves
     "computer", "tracker", "stand0",
