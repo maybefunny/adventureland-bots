@@ -1251,8 +1251,8 @@ async function run() {
         const loop_earthMag3 = async () => {
             try {
                 await Game.stopCharacter("earthMag3")
-                earthMag2 = await Game.startMage("earthMag3", region, identifier)
-                earthMag2.socket.on("disconnect", async () => { await loop_earthMag3() })
+                earthMag3 = await Game.startMage("earthMag3", region, identifier)
+                earthMag3.socket.on("disconnect", async () => { await loop_earthMag3() })
                 startMage(earthMag3)
                 generalBotStuff(earthMag3)
                 botMovement(earthMag3, "porcupine")
