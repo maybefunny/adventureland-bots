@@ -1454,7 +1454,7 @@ export class Player extends Observer {
      * Returns true if our inventory is full, false otherwise
      */
     public isFull(): boolean {
-        return this.character.esize >= this.character.isize
+        return this.character.esize > 0
     }
 
     /**
