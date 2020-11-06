@@ -1327,13 +1327,13 @@ async function run() {
         // }
         const loop_earthMer3 = async () => {
             try {
-                await Game.stopCharacter("earthMer2")
-                earthMer3 = await Game.startMerchant("earthMer2", region, identifier)
+                await Game.stopCharacter("earthMer3")
+                earthMer3 = await Game.startMerchant("earthMer3", region, identifier)
                 earthMer3.socket.on("disconnect", async () => { await loop_earthMer3() })
                 startMerchant(earthMer3)
                 generalBotStuff(earthMer3)
             } catch (e) {
-                await Game.stopCharacter("earthMer2")
+                await Game.stopCharacter("earthMer3")
                 setTimeout(async () => { await loop_earthMer3() }, 1000)
             }
         }
