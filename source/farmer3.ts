@@ -1470,7 +1470,7 @@ async function run() {
                 earthRog.socket.on("disconnect", async () => { await loop_earthRog() })
                 startRogue(earthRog)
                 generalBotStuff(earthRog)
-                botMovement(earthRog, "goo")
+                botMovement(earthRog, "snake")
             } catch (e) {
                 await Game.stopCharacter("earthRog")
                 setTimeout(async () => { await loop_earthRog() }, 1000)
@@ -1483,7 +1483,7 @@ async function run() {
                 earthRog2.socket.on("disconnect", async () => { await loop_earthRog2() })
                 startRogue(earthRog2)
                 generalBotStuff(earthRog2)
-                botMovement(earthRog2, "goo")
+                botMovement(earthRog2, "snake")
             } catch (e) {
                 await Game.stopCharacter("earthRog2")
                 setTimeout(async () => { await loop_earthRog2() }, 1000)
@@ -1496,7 +1496,7 @@ async function run() {
                 earthPal.socket.on("disconnect", async () => { await loop_earthPal() })
                 startRogue(earthPal)
                 generalBotStuff(earthPal)
-                botMovement(earthPal, "goo")
+                botMovement(earthPal, "snake")
             } catch (e) {
                 await Game.stopCharacter("earthPal")
                 setTimeout(async () => { await loop_earthPal() }, 1000)
