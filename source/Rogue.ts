@@ -4,9 +4,25 @@ import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 
 export class Rogue extends PingCompensatedPlayer {
     // NOTE: UNTESTED
-    // TODO: Add promises
     public invis() {
-        this.socket.emit("skill", { name: "invis" })
+        const invised = new Promise((resolve, reject) => {
+            const cooldownCheck = (data: EvalData) => {
+                if (/skill_timeout\s*\(\s*['"]invis['"]\s*,?\s*(\d+\.?\d+?)?\s*\)/.test(data.code)) {
+                    this.socket.removeListener("eval", cooldownCheck)
+                    resolve()
+                }
+            }
+
+            setTimeout(() => {
+                this.socket.removeListener("eval", cooldownCheck)
+                reject(`invis timeout (${TIMEOUT}ms)`)
+            }, TIMEOUT)
+            this.socket.on("eval", cooldownCheck)
+        })
+        this.socket.emit("skill", {
+            name: "invis"
+        })
+        return invised
     }
 
     // NOTE: UNTESTED

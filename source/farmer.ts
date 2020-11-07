@@ -544,7 +544,7 @@ async function startRogue(bot: Rogue) {
     async function invisLoop() {
         try {
             if (bot.socket.disconnected) return
-            if (bot.canUse("invis")) await bot.invis()
+            if (!bot.character.s.invis && bot.canUse("invis")) await bot.invis()
         } catch (e) {
             console.error(e)
         }
