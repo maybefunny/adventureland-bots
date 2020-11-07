@@ -557,7 +557,7 @@ async function startRogue(bot: Rogue) {
     async function rspeedLoop() {
         try {
             if (bot.socket.disconnected) return
-            for (const friend of [earthiverse, earthRan2, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMer, earthMer2]) {
+            for (const friend of [earthiverse, earthRan2, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMer, earthMer3]) {
                 if (!friend) continue
                 if (friend.character.s.rspeed && friend.character.s.rspeed.ms > bot.G.conditions.rspeed.duration - 60000) continue // Already has buff
                 if (Tools.distance(bot.character, friend.character) > bot.character.range) continue // Too far away to buff
