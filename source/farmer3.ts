@@ -799,7 +799,6 @@ async function startMage(bot: Mage) {
 
 async function startRogue(bot: Rogue) {
     async function attackLoop() {
-        let cooldown = 10
         try {
             if (bot.socket.disconnected) return
 
@@ -856,16 +855,80 @@ async function startRogue(bot: Rogue) {
                         }
                     }
                     await bot.attack(targets[0].id)
-                    cooldown = bot.getCooldown("attack")
+                }
+            }
+
+            if (bot.canUse("quickstab")) {
+                const targets: EntityData[] = []
+                for (const [, entity] of bot.entities) {
+                    if (entity.cooperative !== true && entity.target && entity.target !== bot.character.id) continue // It's targeting someone else
+                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
+
+                    // If the target will die to incoming projectiles, ignore it
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
+
+                    targets.push(entity)
+
+                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0] * bot.G.skills.quickstab.damage_multiplier
+                    if (minimumDamage > entity.hp) {
+                        // Stop looking for another one to attack, since we can kill this one in one hit.
+                        targets[0] = entity
+                        break
+                    }
+                }
+
+                if (targets.length) {
+                    await bot.quickStab(targets[0].id)
+                }
+            }
+
+            if (bot.canUse("quickpunch")) {
+                const targets: EntityData[] = []
+                for (const [, entity] of bot.entities) {
+                    if (entity.cooperative !== true && entity.target && entity.target !== bot.character.id) continue // It's targeting someone else
+                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
+
+                    // If the target will die to incoming projectiles, ignore it
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
+
+                    targets.push(entity)
+
+                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0] * bot.G.skills.quickpunch.damage_multiplier
+                    if (minimumDamage > entity.hp) {
+                        // Stop looking for another one to attack, since we can kill this one in one hit.
+                        targets[0] = entity
+                        break
+                    }
+                }
+
+                if (targets.length) {
+                    await bot.quickPunch(targets[0].id)
                 }
             }
         } catch (e) {
             console.error(e)
         }
 
-        setTimeout(async () => { attackLoop() }, cooldown)
+        setTimeout(async () => { attackLoop() }, Math.max(10, Math.min(bot.getCooldown("attack"), bot.getCooldown("quickstab"))))
     }
     attackLoop()
+
+    async function invisLoop() {
+        try {
+            if (bot.socket.disconnected) return
+            if (bot.canUse("invis")) await bot.invis()
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("invis")))
+    }
 
     async function sendItemLoop() {
         try {
@@ -1389,7 +1452,7 @@ async function startMerchant(bot: Merchant) {
 
             // Find other characters that need mluck and go find them
             if (bot.canUse("mluck")) {
-                const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": "earthMer" } }] }).lean().exec()
+                const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.character.id } }] }).lean().exec()
                 for (const character of charactersToMluck) {
                     // Move to them, and we'll automatically mluck them
                     await bot.closeMerchantStand()
@@ -1494,7 +1557,7 @@ async function run() {
                 await Game.stopCharacter("earthPal")
                 earthPal = await Game.startCharacter("earthPal", region, identifier)
                 earthPal.socket.on("disconnect", async () => { await loop_earthPal() })
-                startRogue(earthPal)
+                startPaladin(earthPal)
                 generalBotStuff(earthPal)
                 botMovement(earthPal, "snake")
             } catch (e) {
