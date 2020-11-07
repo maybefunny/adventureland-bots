@@ -453,10 +453,14 @@ async function startRanger(bot: Ranger) {
                 }
 
                 // Energize if we can
-                if (earthMag && Tools.distance(bot.character, earthMag.character) < bot.G.skills.energize.range && earthMag.canUse("energize")) {
-                    earthMag.energize(bot.character.id)
-                } else if (earthMag2 && Tools.distance(bot.character, earthMag2.character) < bot.G.skills.energize.range && earthMag2.canUse("energize")) {
-                    earthMag2.energize(bot.character.id)
+                for (const mage of [earthMag, earthMag2]) {
+                    if (!mage) continue // Not online
+                    if (!mage.canUse("energize")) continue // Can't energize
+                    if (mage.character.id == bot.character.id) continue // Can't energize ourself (TODO: is this true?)
+                    if (Tools.distance(bot.character, earthMag.character) > bot.G.skills.energize.range) continue // Too far away
+
+                    mage.energize(bot.character.id)
+                    break
                 }
 
                 if (fiveshotTargets.length >= 5 && bot.canUse("5shot")) {
@@ -732,6 +736,18 @@ async function startMage(bot: Mage) {
                             bot.entities.delete(targets[0].id)
                         }
                     }
+
+                    // Energize if we can
+                    for (const mage of [earthMag, earthMag2]) {
+                        if (!mage) continue // Not online
+                        if (!mage.canUse("energize")) continue // Can't energize
+                        if (mage.character.id == bot.character.id) continue // Can't energize ourself (TODO: is this true?)
+                        if (Tools.distance(bot.character, earthMag.character) > bot.G.skills.energize.range) continue // Too far away
+
+                        mage.energize(bot.character.id)
+                        break
+                    }
+
                     await bot.attack(targets[0].id)
                     cooldown = bot.getCooldown("attack")
                 }
