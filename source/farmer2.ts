@@ -550,8 +550,26 @@ async function startRogue(bot: Rogue) {
             console.error(e)
         }
 
-        setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("invis")))
+        setTimeout(async () => { invisLoop() }, Math.max(10, bot.getCooldown("invis")))
     }
+    invisLoop()
+
+    async function rspeedLoop() {
+        try {
+            if (bot.socket.disconnected) return
+            for (const friend of [earthiverse, earthRan2, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer3]) {
+                if (!friend) continue
+                if (friend.character.s.rspeed.ms > bot.G.conditions.rspeed.duration - 60000) continue // Already has buff
+                if (Tools.distance(bot.character, friend.character) > bot.character.range) continue // Too far away to buff
+                if (bot.canUse("rspeed")) await bot.rspeed(friend.character.id)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { rspeedLoop() }, Math.max(10, bot.getCooldown("rspeed")))
+    }
+    rspeedLoop()
 
     async function sendItemLoop() {
         try {

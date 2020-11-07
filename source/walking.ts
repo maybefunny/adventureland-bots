@@ -1,13 +1,11 @@
-import { MERCHANT_ITEMS_TO_HOLD } from "./constants.js"
-import { CharacterModel } from "./database/characters/characters.model.js"
-import { ServerIdentifier, ServerRegion } from "./definitions/adventureland.js"
+import { BankPackType, ItemInfo, ServerIdentifier, ServerRegion } from "./definitions/adventureland.js"
 import { Game } from "./Game.js"
 import { Merchant } from "./Merchant.js"
 import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
 
-const region: ServerRegion = "US"
+const region: ServerRegion = "ASIA"
 const identifier: ServerIdentifier = "I"
 
 async function buyLoop(bot: PingCompensatedPlayer) {
@@ -104,46 +102,21 @@ async function moveLoop(bot: Merchant) {
             return
         }
 
-        // If we are full, let's go to the bank
-        let freeSlots = 0
-        for (const item of bot.character.items) {
-            if (!item) freeSlots++
-        }
-        if (freeSlots == 0) {
-            await bot.smartMove("bank")
+        await bot.closeMerchantStand()
+        await bot.smartMove("goldnpc")
 
-            // Deposit excess gold
-            const excessGold = bot.character.gold - 100000000
-            if (excessGold > 0) {
-                await bot.depositGold(excessGold)
+        // Store information about everything in our bank to use it later to find upgradable stuff
+        const bankItems: ItemInfo[] = []
+        for (let i = 0; i <= 7; i++) {
+            const bankPack = `items${i}` as Exclude<BankPackType, "gold">
+            for (const item of bot.bank[bankPack]) {
+                bankItems.push(item)
             }
-
-            // Deposit items
-            for (let i = 0; i < bot.character.items.length; i++) {
-                const item = bot.character.items[i]
-                if (!item) continue
-                if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name)) {
-                    // Deposit it in the bank
-                    await bot.depositItem(i)
-                }
-            }
-
-            setTimeout(async () => { moveLoop(bot) }, 250)
-            return
         }
+        const duplicates = bot.locateDuplicateItems(bankItems)
+        console.log(bot.bank)
+        console.log(duplicates)
 
-        // Find other characters that need mluck and go find them
-        const charactersToMluck = await CharacterModel.find({ serverRegion: region, serverIdentifier: identifier, lastSeen: { "$gt": Date.now() - 300000 }, "$or": [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": {"$ne": "earthMer"}}] }).lean().exec()
-        for (const character of charactersToMluck) {
-            // Move to them, and we'll automatically mluck them
-            await bot.smartMove(character)
-
-            setTimeout(async () => { moveLoop(bot) }, 250)
-            return
-        }
-
-        // Hang out in town
-        await bot.smartMove("main")
     } catch (e) {
         console.error(e)
     }
@@ -153,11 +126,8 @@ async function moveLoop(bot: Merchant) {
 
 async function run() {
     await Promise.all([Game.loginJSONFile("../credentials.json"), Pathfinder.prepare()])
-    Game.startObserver(region, identifier)
-    Game.startObserver(region, identifier)
-    Game.startObserver(region, identifier)
 
-    const bot = await Game.startMerchant("earthMer", region, identifier)
+    const bot = await Game.startMerchant("earthMer5", region, identifier)
     buyLoop(bot)
     healLoop(bot)
     mluckLoop(bot)
