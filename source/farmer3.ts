@@ -937,11 +937,8 @@ async function startRogue(bot: Rogue) {
             
             for (const friend of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMer, earthMer4]) {
                 if (!friend) continue
-                console.log(`yup we have a friend (${friend.character.id})`)
                 if (friend.character.s.rspeed && friend.character.s.rspeed.ms > bot.G.conditions.rspeed.duration - 60000) continue // Already has buff
-                console.log("yup no buff")
                 if (Tools.distance(bot.character, friend.character) > bot.character.range) continue // Too far away to buff
-                console.log("yup close")
                 if (bot.canUse("rspeed")) await bot.rspeed(friend.character.id)
             }
         } catch (e) {
