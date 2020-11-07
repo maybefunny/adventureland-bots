@@ -13,7 +13,7 @@ import { Mage } from "./Mage.js"
 import { Merchant } from "./Merchant.js"
 import { Priest } from "./Priest.js"
 import { Warrior } from "./Warrior.js"
-import { Rogue } from "./Rogue"
+import { Rogue } from "./Rogue.js"
 
 // TODO: Move to config file
 export const MAX_PINGS = 100
