@@ -473,7 +473,7 @@ async function startRanger(bot: Ranger) {
                 if (fiveshotTargets.length >= 5 && bot.canUse("5shot")) {
                     for (const target of fiveshotTargets) {
                         if (await Tools.isGuaranteedKill(bot.character, target)) {
-                            for (const bot of [earthiverse, earthRan2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
+                            for (const bot of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
                                 if (!bot) continue
                                 bot.entities.delete(target.id)
                             }
@@ -483,7 +483,7 @@ async function startRanger(bot: Ranger) {
                 } else if (threeshotTargets.length >= 3 && bot.canUse("3shot")) {
                     for (const target of threeshotTargets) {
                         if (await Tools.isGuaranteedKill(bot.character, target)) {
-                            for (const bot of [earthiverse, earthRan2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
+                            for (const bot of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
                                 if (!bot) continue
                                 bot.entities.delete(target.id)
                             }
@@ -492,7 +492,7 @@ async function startRanger(bot: Ranger) {
                     await bot.threeShot(threeshotTargets[0].id, threeshotTargets[1].id, threeshotTargets[2].id)
                 } else if (targets.length) {
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
-                        for (const bot of [earthiverse, earthRan2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
+                        for (const bot of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
                             if (!bot) continue
                             bot.entities.delete(targets[0].id)
                         }
@@ -613,7 +613,7 @@ async function startPriest(bot: Priest) {
 
                 if (targets.length) {
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
-                        for (const bot of [earthiverse, earthRan2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
+                        for (const bot of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
                             if (!bot) continue
                             bot.entities.delete(targets[0].id)
                         }
@@ -668,7 +668,7 @@ async function startPriest(bot: Priest) {
             }
 
             if (bot.canUse("partyheal")) {
-                for (const friend of [earthiverse, earthRan2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
+                for (const friend of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
                     if (!friend || !friend.party || !friend.party.list.includes(bot.character.id)) continue // We aren't in the party!?
                     if (friend.character.hp < friend.character.max_hp * 0.5) {
                         // Someone in our party has low HP
@@ -751,7 +751,7 @@ async function startMage(bot: Mage) {
                     }
 
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
-                        for (const bot of [earthiverse, earthRan2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
+                        for (const bot of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
                             if (!bot) continue
                             bot.entities.delete(targets[0].id)
                         }
@@ -849,7 +849,7 @@ async function startRogue(bot: Rogue) {
                     }
 
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
-                        for (const bot of [earthiverse, earthRan2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
+                        for (const bot of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
                             if (!bot) continue
                             bot.entities.delete(targets[0].id)
                         }
@@ -934,10 +934,14 @@ async function startRogue(bot: Rogue) {
     async function rspeedLoop() {
         try {
             if (bot.socket.disconnected) return
-            for (const friend of [earthiverse, earthRan2, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMer, earthMer4]) {
+            
+            for (const friend of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMer, earthMer4]) {
                 if (!friend) continue
+                console.log(`yup we have a friend (${friend.character.id})`)
                 if (friend.character.s.rspeed && friend.character.s.rspeed.ms > bot.G.conditions.rspeed.duration - 60000) continue // Already has buff
+                console.log("yup no buff")
                 if (Tools.distance(bot.character, friend.character) > bot.character.range) continue // Too far away to buff
+                console.log("yup close")
                 if (bot.canUse("rspeed")) await bot.rspeed(friend.character.id)
             }
         } catch (e) {
@@ -1030,7 +1034,7 @@ async function startPaladin(bot: PingCompensatedPlayer) {
                     }
 
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
-                        for (const bot of [earthiverse, earthRan2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
+                        for (const bot of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
                             if (!bot) continue
                             bot.entities.delete(targets[0].id)
                         }
@@ -1115,7 +1119,7 @@ async function startWarrior(bot: Warrior) {
 
                 if (targets.length) {
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
-                        for (const bot of [earthiverse, earthRan2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
+                        for (const bot of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
                             if (!bot) continue
                             bot.entities.delete(targets[0].id)
                         }
@@ -1231,7 +1235,7 @@ async function startMerchant(bot: Merchant) {
         try {
             if (bot.socket.disconnected) return
 
-            for (const friend of [earthiverse, earthRan2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
+            for (const friend of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
                 if (!friend) continue
                 if (Tools.distance(bot.character, friend.character) > NPC_INTERACTION_DISTANCE) continue
 
@@ -1441,7 +1445,7 @@ async function startMerchant(bot: Merchant) {
             }
 
             // Move to our friends if they have lots of items (they'll send them over)
-            for (const friend of [earthiverse, earthRan2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
+            for (const friend of [earthiverse, earthRan2, earthRog, earthRog2, earthPal, earthPri, earthPri2, earthWar, earthWar2, earthMag, earthMag2, earthMag3, earthMer, earthMer4]) {
                 if (!friend) continue
 
                 // Check if they're full, or they need mluck
