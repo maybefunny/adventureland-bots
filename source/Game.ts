@@ -13,6 +13,7 @@ import { Mage } from "./Mage.js"
 import { Merchant } from "./Merchant.js"
 import { Priest } from "./Priest.js"
 import { Warrior } from "./Warrior.js"
+import { Rogue } from "./Rogue"
 
 // TODO: Move to config file
 export const MAX_PINGS = 100
@@ -132,6 +133,7 @@ export class Game {
             else if (cType == "merchant") player = new Merchant(userID, userAuth, characterID, Game.G, this.servers[sRegion][sID])
             else if (cType == "priest") player = new Priest(userID, userAuth, characterID, Game.G, this.servers[sRegion][sID])
             else if (cType == "ranger") player = new Ranger(userID, userAuth, characterID, Game.G, this.servers[sRegion][sID])
+            else if (cType == "rogue") player = new Rogue(userID, userAuth, characterID, Game.G, this.servers[sRegion][sID])
             else if (cType == "warrior") player = new Warrior(userID, userAuth, characterID, Game.G, this.servers[sRegion][sID])
             else player = new PingCompensatedPlayer(userID, userAuth, characterID, Game.G, this.servers[sRegion][sID])
 
@@ -163,6 +165,10 @@ export class Game {
 
     static async startRanger(cName: string, sRegion: ServerRegion, sID: ServerIdentifier): Promise<Ranger> {
         return await Game.startCharacter(cName, sRegion, sID, "ranger") as Ranger
+    }
+
+    static async startRogue(cName: string, sRegion: ServerRegion, sID: ServerIdentifier): Promise<Rogue> {
+        return await Game.startCharacter(cName, sRegion, sID, "rogue") as Rogue
     }
 
     static async startWarrior(cName: string, sRegion: ServerRegion, sID: ServerIdentifier): Promise<Warrior> {
