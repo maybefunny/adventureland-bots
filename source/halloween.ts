@@ -245,7 +245,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
             if (hpRatio < mpRatio) {
                 if (missingHP >= 400 && hpot1 !== undefined) {
                     await bot.useHPPot(hpot1)
-                } else if (missingHP >= 200 && hpot1 !== undefined) {
+                } else if (missingHP >= 200 && hpot0 !== undefined) {
                     await bot.useHPPot(hpot0)
                 } else {
                     await bot.regenHP()
@@ -261,7 +261,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
             } else if (hpRatio < 1) {
                 if (missingHP >= 400 && hpot1 !== undefined) {
                     await bot.useHPPot(hpot1)
-                } else if (missingHP >= 200 && hpot1 !== undefined) {
+                } else if (missingHP >= 200 && hpot0 !== undefined) {
                     await bot.useHPPot(hpot0)
                 } else {
                     await bot.regenHP()
