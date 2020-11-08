@@ -13,7 +13,7 @@ import { Tools } from "./Tools.js"
 import { Mage } from "./Mage.js"
 import { Rogue } from "./Rogue.js"
 
-const region: ServerRegion = "EU"
+const region: ServerRegion = "ASIA"
 const identifier: ServerIdentifier = "I"
 
 let earthMag: Mage
@@ -1556,45 +1556,58 @@ async function run() {
         //         setTimeout(async () => { await loop_earthRan2() }, 1000)
         //     }
         // }
-        const loop_earthRog = async () => {
+        const loop_earthRan3 = async () => {
             try {
-                await Game.stopCharacter("earthRog")
-                earthRog = await Game.startRogue("earthRog", region, identifier)
-                earthRog.socket.on("disconnect", async () => { await loop_earthRog() })
-                startRogue(earthRog)
-                generalBotStuff(earthRog)
-                botMovement(earthRog, "snake")
+                await Game.stopCharacter("earthRan3")
+                earthRan3 = await Game.startRanger("earthRan3", region, identifier)
+                earthRan3.socket.on("disconnect", async () => { await loop_earthRan3() })
+                startRanger(earthRan3)
+                generalBotStuff(earthRan3)
+                botMovement(earthRan3, "bee")
             } catch (e) {
-                await Game.stopCharacter("earthRog")
-                setTimeout(async () => { await loop_earthRog() }, 1000)
+                await Game.stopCharacter("earthRan3")
+                setTimeout(async () => { await loop_earthRan3() }, 1000)
             }
         }
-        const loop_earthRog2 = async () => {
-            try {
-                await Game.stopCharacter("earthRog2")
-                earthRog2 = await Game.startRogue("earthRog2", region, identifier)
-                earthRog2.socket.on("disconnect", async () => { await loop_earthRog2() })
-                startRogue(earthRog2)
-                generalBotStuff(earthRog2)
-                botMovement(earthRog2, "snake")
-            } catch (e) {
-                await Game.stopCharacter("earthRog2")
-                setTimeout(async () => { await loop_earthRog2() }, 1000)
-            }
-        }
-        const loop_earthPal = async () => {
-            try {
-                await Game.stopCharacter("earthPal")
-                earthPal = await Game.startCharacter("earthPal", region, identifier)
-                earthPal.socket.on("disconnect", async () => { await loop_earthPal() })
-                startPaladin(earthPal)
-                generalBotStuff(earthPal)
-                botMovement(earthPal, "snake")
-            } catch (e) {
-                await Game.stopCharacter("earthPal")
-                setTimeout(async () => { await loop_earthPal() }, 1000)
-            }
-        }
+        // const loop_earthRog = async () => {
+        //     try {
+        //         await Game.stopCharacter("earthRog")
+        //         earthRog = await Game.startRogue("earthRog", region, identifier)
+        //         earthRog.socket.on("disconnect", async () => { await loop_earthRog() })
+        //         startRogue(earthRog)
+        //         generalBotStuff(earthRog)
+        //         botMovement(earthRog, "snake")
+        //     } catch (e) {
+        //         await Game.stopCharacter("earthRog")
+        //         setTimeout(async () => { await loop_earthRog() }, 1000)
+        //     }
+        // }
+        // const loop_earthRog2 = async () => {
+        //     try {
+        //         await Game.stopCharacter("earthRog2")
+        //         earthRog2 = await Game.startRogue("earthRog2", region, identifier)
+        //         earthRog2.socket.on("disconnect", async () => { await loop_earthRog2() })
+        //         startRogue(earthRog2)
+        //         generalBotStuff(earthRog2)
+        //         botMovement(earthRog2, "snake")
+        //     } catch (e) {
+        //         await Game.stopCharacter("earthRog2")
+        //         setTimeout(async () => { await loop_earthRog2() }, 1000)
+        //     }
+        // }
+        // const loop_earthPal = async () => {
+        //     try {
+        //         await Game.stopCharacter("earthPal")
+        //         earthPal = await Game.startCharacter("earthPal", region, identifier)
+        //         earthPal.socket.on("disconnect", async () => { await loop_earthPal() })
+        //         startPaladin(earthPal)
+        //         generalBotStuff(earthPal)
+        //         botMovement(earthPal, "snake")
+        //     } catch (e) {
+        //         await Game.stopCharacter("earthPal")
+        //         setTimeout(async () => { await loop_earthPal() }, 1000)
+        //     }
+        // }
         // const loop_earthMag = async () => {
         //     try {
         //         await Game.stopCharacter("earthMag")
@@ -1698,24 +1711,25 @@ async function run() {
         //         setTimeout(async () => { await loop_earthMer() }, 1000)
         //     }
         // }
-        const loop_earthMer4 = async () => {
+        const loop_earthMer5 = async () => {
             try {
-                await Game.stopCharacter("earthMer4")
-                earthMer4 = await Game.startMerchant("earthMer4", region, identifier)
-                earthMer4.socket.on("disconnect", async () => { await loop_earthMer4() })
-                startMerchant(earthMer4)
-                generalBotStuff(earthMer4)
+                await Game.stopCharacter("earthMer5")
+                earthMer5 = await Game.startMerchant("earthMer5", region, identifier)
+                earthMer5.socket.on("disconnect", async () => { await loop_earthMer5() })
+                startMerchant(earthMer5)
+                generalBotStuff(earthMer5)
             } catch (e) {
-                await Game.stopCharacter("earthMer4")
-                setTimeout(async () => { await loop_earthMer4() }, 1000)
+                await Game.stopCharacter("earthMer5")
+                setTimeout(async () => { await loop_earthMer5() }, 1000)
             }
         }
 
         // loop_earthiverse()
         // loop_earthRan2()
-        loop_earthRog()
-        loop_earthRog2()
-        loop_earthPal()
+        loop_earthRan3()
+        // loop_earthRog()
+        // loop_earthRog2()
+        // loop_earthPal()
         // loop_earthMag()
         // loop_earthMag2()
         // loop_earthMag3()
@@ -1724,7 +1738,7 @@ async function run() {
         // loop_earthPri()
         // loop_earthPri2()
         // loop_earthMer()
-        loop_earthMer4()
+        loop_earthMer5()
     } catch (e) {
         await Game.disconnect(false)
     }

@@ -64,7 +64,7 @@ async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promis
 
 async function generalBotStuff(bot: PingCompensatedPlayer) {
     bot.socket.on("magiport", async (data: { name: string }) => {
-        if (["Bjarny", "earthMag"].includes(data.name)) {
+        if (["earthMag", "earthMag2", "earthMag3"].includes(data.name)) {
             if (bot.character.c.town) await bot.stopWarpToTown()
             await bot.acceptMagiport(data.name)
             return
@@ -216,7 +216,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 
             if (!bot.character.slots.elixir) {
                 let luckElixir = bot.locateItem("elixirluck")
-                if (luckElixir == undefined && bot.character.gold >= bot.G.items.elixirluck.g && !bot.isFull()) luckElixir = await bot.buy("elixirluck")
+                if (luckElixir == undefined && bot.canBuy("elixirluck")) luckElixir = await bot.buy("elixirluck")
                 if (luckElixir !== undefined) await bot.equip(luckElixir)
             }
         } catch (e) {
@@ -265,22 +265,30 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
             const hpRatio = bot.character.hp / bot.character.max_hp
             const mpRatio = bot.character.mp / bot.character.max_mp
             const hpot1 = bot.locateItem("hpot1")
+            const hpot0 = bot.locateItem("hpot0")
             const mpot1 = bot.locateItem("mpot1")
+            const mpot0 = bot.locateItem("hpot0")
             if (hpRatio < mpRatio) {
-                if (missingHP >= 400 && hpot1) {
+                if (missingHP >= 400 && hpot1 !== undefined) {
                     await bot.useHPPot(hpot1)
+                } else if (missingHP >= 200 && hpot1 !== undefined) {
+                    await bot.useHPPot(hpot0)
                 } else {
                     await bot.regenHP()
                 }
             } else if (mpRatio < hpRatio) {
-                if (missingMP >= 500 && mpot1) {
+                if (missingMP >= 500 && mpot1 !== undefined) {
                     await bot.useMPPot(mpot1)
+                } else if (missingMP >= 300 && mpot0 !== undefined) {
+                    await bot.useMPPot(mpot0)
                 } else {
                     await bot.regenMP()
                 }
             } else if (hpRatio < 1) {
-                if (missingHP >= 400 && hpot1) {
+                if (missingHP >= 400 && hpot1 !== undefined) {
                     await bot.useHPPot(hpot1)
+                } else if (missingHP >= 200 && hpot1 !== undefined) {
+                    await bot.useHPPot(hpot0)
                 } else {
                     await bot.regenHP()
                 }

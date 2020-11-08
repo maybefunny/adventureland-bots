@@ -93,7 +93,7 @@ export const MAGE_ITEMS_TO_HOLD: ItemName[] = [
     // Shields
     "lantern", "shield", "sshield",
     // Orbs
-    "orbg", "orbofint", "wbook1"
+    "orbg", "orbofint", "test_orb", "wbook1"
 ]
 
 export const MERCHANT_ITEMS_TO_HOLD: ItemName[] = [
@@ -121,7 +121,7 @@ export const PRIEST_ITEMS_TO_HOLD: ItemName[] = [
     // Shields
     "lantern", "shield", "sshield",
     // Orbs
-    "orbg", "orbofint", "wbook1"
+    "orbg", "orbofint", "test_orb", "wbook1"
 ]
 
 export const RANGER_ITEMS_TO_HOLD: ItemName[] = [
@@ -136,7 +136,7 @@ export const RANGER_ITEMS_TO_HOLD: ItemName[] = [
     // Quivers
     "quiver", "t2quiver",
     // Orbs
-    "orbg", "orbofdex"
+    "orbg", "orbofdex", "test_orb"
 ]
 
 export const WARRIOR_ITEMS_TO_HOLD: ItemName[] = [
@@ -151,7 +151,7 @@ export const WARRIOR_ITEMS_TO_HOLD: ItemName[] = [
     // Shields
     "lantern", "shield", "sshield",
     // Orbs
-    "orbg", "orbofstr"
+    "orbg", "orbofstr", "test_orb"
 ]
 
 export const SPECIAL_MONSTERS: MonsterName[] = ["dragold", "fvampire", "franky", "goldenbat", "greenjr", "grinch", "jr", "mrgreen", "mrpumpkin", "mvampire", "phoenix", "pinkgoo", "snowman", "tinyp", "wabbit"]
