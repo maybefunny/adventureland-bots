@@ -34,7 +34,4 @@ export type LinkData = NodeData & (
      */
     | {
         type: "move"
-    }
-    | {
-        type: "jail"
     })

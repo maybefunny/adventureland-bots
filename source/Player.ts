@@ -1939,8 +1939,6 @@ export class Player extends Observer {
                     await this.warpToTown()
                 } else if (currentMove.type == "transport") {
                     await this.transport(currentMove.map, currentMove.spawn)
-                } else if (currentMove.type == "jail") {
-                    await this.warpToJail()
                 }
             } catch (e) {
                 console.error(e)
