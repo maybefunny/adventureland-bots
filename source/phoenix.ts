@@ -587,6 +587,8 @@ async function startMage(bot: Mage, n: number) {
 
     async function moveLoop() {
         try {
+            if (bot.socket.disconnected) return
+            
             // If we are dead, respawn
             if (bot.character.rip) {
                 await bot.respawn()
@@ -649,6 +651,8 @@ async function startMage(bot: Mage, n: number) {
 
     async function attackLoop() {
         try {
+            if (bot.socket.disconnected) return
+
             if (bot.character.targets > 2 && bot.canUse("scare")) {
                 await bot.scare()
             }
