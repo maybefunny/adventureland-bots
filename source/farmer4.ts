@@ -831,7 +831,7 @@ async function run() {
                 earthRan3.socket.on("disconnect", async () => { await loop_earthRan3() })
                 startRanger(earthRan3)
                 generalBotStuff(earthRan3)
-                botMovement(earthRan3, "bee")
+                botMovement(earthRan3, "snake")
             } catch (e) {
                 await Game.stopCharacter("earthRan3")
                 setTimeout(async () => { await loop_earthRan3() }, 1000)
