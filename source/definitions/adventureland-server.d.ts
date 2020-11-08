@@ -104,7 +104,7 @@ export type CharacterData = {
     in: string
     /** The size of the character's inventory */
     isize: number
-    /** The number of items in the character's inventory */
+    /** The number of empty inventory slots */
     esize: number
     gold: number
     cash: number
