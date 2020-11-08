@@ -21,7 +21,7 @@ export class Pathfinder {
     protected static graph: Graph<NodeData, LinkData> = createGraph({ multigraph: true })
     protected static path = path.nba(Pathfinder.graph, {
         distance(fromNode, toNode, link) {
-            if (link.data && (link.data.type == "leave" || link.data.type == "transport")) {
+            if (link.data && (link.data.type == "leave" || link.data.type == "transport" || link.data.type == "jail")) {
                 // We are using the transporter
                 return Pathfinder.TRANSPORT_COST
             } else if (link.data && link.data.type == "town") {
