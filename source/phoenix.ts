@@ -653,7 +653,7 @@ async function startMage(bot: Mage, n: number) {
                     break
                 }
                 if (Tools.distance(bot.character, entity) < bot.character.range &&
-                    (["armadillo", "bat", "bee", "crab", "crabx", "croc", "fieldgen0", "frog", "minimush", "poisio", "scorpion", "spider", "squig", "squigtoad", "tortoise"] as MonsterName[]).includes(entity.type)) {
+                    (["armadillo", "bat", "bee", "crab", "crabx", "croc", "fieldgen0", "frog", "goo", "minimush", "poisio", "scorpion", "spider", "squig", "squigtoad", "tortoise"] as MonsterName[]).includes(entity.type)) {
                     target = entity
                 }
             }

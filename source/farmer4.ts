@@ -590,20 +590,20 @@ async function startRanger(bot: Ranger) {
         try {
             if (bot.socket.disconnected) return
 
-            if (!earthMer4 || earthMer4.isFull()) {
+            if (!earthMer5 || earthMer5.isFull()) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
             }
 
-            const sendTo = bot.players.get(earthMer4.character.id)
+            const sendTo = bot.players.get(earthMer5.character.id)
             if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
                 const extraGold = bot.character.gold - 1000000
-                if (extraGold > 0) await bot.sendGold(earthMer4.character.id, extraGold)
+                if (extraGold > 0) await bot.sendGold(earthMer5.character.id, extraGold)
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
                     if (!item || RANGER_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
-                    await bot.sendItem(earthMer4.character.id, i, item.q)
+                    await bot.sendItem(earthMer5.character.id, i, item.q)
                 }
             }
         } catch (e) {
