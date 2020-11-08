@@ -2064,6 +2064,7 @@ async function startWarrior(bot: Warrior) {
             const targets: EntityData[] = []
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
+                if (entity.immune) continue // Can't do damage to immune enemies with cleave
                 if (entity.cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
                 if (Tools.distance(bot.character, entity) > bot.G.skills.cleave.range) continue // Only attack those in range
 
