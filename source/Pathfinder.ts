@@ -385,7 +385,7 @@ export class Pathfinder {
 
         // console.log("  Adding town and leave links...")
         const jailNode = this.addNodeToGraph("jail", this.G.maps.jail.spawns[0][0], this.G.maps.jail.spawns[0][1])
-        const jailLinkData: LinkData = { type: "move", map: map, x: Number.MAX_SAFE_INTEGER, y: Number.MAX_SAFE_INTEGER }
+        const jailLinkData: LinkData = { type: "jail", map: jailNode.data.map, x: jailNode.data.x, y: jailNode.data.y }
         const townNode = this.addNodeToGraph(map, this.G.maps[map].spawns[0][0], this.G.maps[map].spawns[0][1])
         const townLinkData: LinkData = { type: "town", map: map, x: townNode.data.x, y: townNode.data.y }
         const leaveLink = this.addNodeToGraph("main", this.G.maps.main.spawns[0][0], this.G.maps.main.spawns[0][1])
