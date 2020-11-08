@@ -472,9 +472,6 @@ async function botMovement(bot: PingCompensatedPlayer, target: MonsterName) {
     moveLoop()
 }
 
-
-
-
 async function startMage(bot: Mage) {
     async function attackLoop() {
         let cooldown = 10
