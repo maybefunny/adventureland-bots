@@ -2706,7 +2706,7 @@ async function startMerchant(bot: Merchant) {
                         bankInfo.push(item)
                     }
                 }
-                let freeSpaces = bot.character.isize - bot.character.esize
+                let freeSpaces = bot.character.esize
                 const duplicates = bot.locateDuplicateItems(bankInfo)
 
                 // Withdraw compoundable & upgradable things
