@@ -3066,7 +3066,7 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                 generalBotStuff(ranger)
             } catch (e) {
                 await Game.stopCharacter(rangerName)
-                setTimeout(async () => { await loopRanger() }, 5000)
+                setTimeout(async () => { await loopRanger() }, 1000)
             }
         }
         const loopWarrior = async () => {
@@ -3078,7 +3078,7 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                 generalBotStuff(warrior)
             } catch (e) {
                 await Game.stopCharacter(warriorName)
-                setTimeout(async () => { await loopWarrior() }, 5000)
+                setTimeout(async () => { await loopWarrior() }, 1000)
             }
         }
         const loopPriest = async () => {
@@ -3090,7 +3090,7 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                 generalBotStuff(priest)
             } catch (e) {
                 await Game.stopCharacter(priestName)
-                setTimeout(async () => { await loopPriest() }, 5000)
+                setTimeout(async () => { await loopPriest() }, 1000)
             }
         }
         const loopMerchant = async () => {
@@ -3102,7 +3102,7 @@ async function run(rangerName: string, warriorName: string, priestName: string, 
                 generalBotStuff(merchant)
             } catch (e) {
                 await Game.stopCharacter(merchantName)
-                setTimeout(async () => { await loopMerchant() }, 5000)
+                setTimeout(async () => { await loopMerchant() }, 1000)
             }
         }
 
