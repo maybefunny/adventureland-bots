@@ -587,6 +587,13 @@ async function startMage(bot: Mage, n: number) {
 
     async function moveLoop() {
         try {
+            // If we are dead, respawn
+            if (bot.character.rip) {
+                await bot.respawn()
+                setTimeout(async () => { moveLoop() }, 1000)
+                return
+            }
+
             // See if we are close to a phoenix
             for (const [, entity] of bot.entities) {
                 if (entity.type !== "phoenix") continue
