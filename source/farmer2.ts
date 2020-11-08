@@ -399,6 +399,14 @@ async function botMovement(bot: PingCompensatedPlayer, target: MonsterName) {
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) return
+            
+            // If we are dead, respawn
+            if (bot.character.rip) {
+                await bot.respawn()
+                setTimeout(async () => { moveLoop() }, 1000)
+                return
+            }
+            
             let closestEntitiy: EntityData
             let closestDistance: number = Number.MAX_VALUE
             for (const [, entity] of bot.entities) {
