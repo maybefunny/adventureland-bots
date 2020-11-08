@@ -1,7 +1,7 @@
 import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MAGE_ITEMS_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityData, HitData } from "./definitions/adventureland-server.js"
-import { BankPackType, ItemInfo, ItemName, MonsterName, ServerIdentifier, ServerRegion, TradeSlotType } from "./definitions/adventureland.js"
+import { ItemName, MonsterName, ServerIdentifier, ServerRegion, TradeSlotType } from "./definitions/adventureland.js"
 import { Game } from "./Game.js"
 import { Warrior } from "./Warrior.js"
 import { Priest } from "./Priest.js"
@@ -228,6 +228,36 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
     }
     exchangeLoop()
 
+    async function givePotionsLoop() {
+        try {
+            if (bot.socket.disconnected) return
+            if (!bot.hasItem("computer")) return // Don't give potions if we don't have a computer
+
+            for (const friend of [earthMag, earthMag2, earthMag3, earthMer, earthMer2, earthMer3, earthMer4, earthMer5, earthPal, earthPri, earthPri2, earthiverse, earthRan2, earthRan3, earthRog, earthRog2, earthWar, earthWar2]) {
+                if (!friend) continue
+                if (Tools.distance(bot.character, friend.character) > NPC_INTERACTION_DISTANCE) continue
+
+                const ourHpot1 = bot.countItem("hpot1")
+                if (ourHpot1 < 1000 && bot.canBuy("hpot1")) await bot.buy("hpot1", 1000 - ourHpot1)
+                const ourMpot1 = bot.countItem("mpot1")
+                if (ourMpot1 < 1000 && bot.canBuy("mpot1")) await bot.buy("mpot1", 1000 - ourMpot1)
+
+                const numHpot1ToGive = 1000 - friend.countItem("hpot1")
+                if (numHpot1ToGive > 0) {
+                    await bot.sendItem(friend.character.id, bot.locateItem("hpot1", bot.character.items, { quantityGreaterThan: numHpot1ToGive - 1 }))
+                }
+                const numMpot1ToGive = 1000 - friend.countItem("mpot1")
+                if (numMpot1ToGive > 0) {
+                    await bot.sendItem(friend.character.id, bot.locateItem("mpot1", bot.character.items, { quantityGreaterThan: numMpot1ToGive - 1 }))
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+        setTimeout(async () => { givePotionsLoop() }, 1000)
+    }
+    givePotionsLoop()
+
     async function healLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -399,7 +429,7 @@ async function botMovement(bot: PingCompensatedPlayer, target: MonsterName) {
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) return
-            
+
             // If we are dead, respawn
             if (bot.character.rip) {
                 await bot.respawn()
@@ -442,185 +472,6 @@ async function botMovement(bot: PingCompensatedPlayer, target: MonsterName) {
     moveLoop()
 }
 
-async function startRogue(bot: Rogue) {
-    async function attackLoop() {
-        try {
-            if (bot.socket.disconnected) return
-
-            if (bot.character.rip) {
-                setTimeout(async () => { attackLoop() }, 1000)
-                return
-            }
-
-            if (bot.character.c.town) {
-                setTimeout(async () => { attackLoop() }, bot.character.c.town.ms)
-                return
-            }
-
-            if (bot.canUse("attack")) {
-                const targets: EntityData[] = []
-                for (const [, entity] of bot.entities) {
-                    if (entity.cooperative !== true && entity.target && entity.target !== bot.character.id) continue // It's targeting someone else
-                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
-
-                    // If the target will die to incoming projectiles, ignore it
-                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
-
-                    // If the target will burn to death, ignore it
-                    if (Tools.willBurnToDeath(entity)) continue
-
-                    targets.push(entity)
-
-                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
-                    if (minimumDamage > entity.hp) {
-                        // Stop looking for another one to attack, since we can kill this one in one hit.
-                        targets[0] = entity
-                        break
-                    }
-                }
-
-                if (targets.length) {
-                    // Energize if we can
-                    if (!bot.character.s.energized) {
-                        for (const mage of [earthMag, earthMag2, earthMag3]) {
-                            if (!mage) continue // Not online
-                            if (!mage.canUse("energize")) continue // Can't energize
-                            if (mage.character.id == bot.character.id) continue // Can't energize ourself (TODO: is this true?)
-                            if (Tools.distance(bot.character, earthMag.character) > bot.G.skills.energize.range) continue // Too far away
-
-                            mage.energize(bot.character.id)
-                            break
-                        }
-                    }
-
-                    if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
-                        for (const bot of [earthMag, earthMag2, earthMag3, earthMer, earthMer2, earthMer3, earthMer4, earthMer5, earthPal, earthPri, earthPri2, earthiverse, earthRan2, earthRan3, earthRog, earthRog2, earthWar, earthWar2]) {
-                            if (!bot) continue
-                            bot.entities.delete(targets[0].id)
-                        }
-                    }
-                    await bot.attack(targets[0].id)
-                }
-            }
-
-            if (bot.canUse("quickstab")) {
-                const targets: EntityData[] = []
-                for (const [, entity] of bot.entities) {
-                    if (entity.cooperative !== true && entity.target && entity.target !== bot.character.id) continue // It's targeting someone else
-                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
-
-                    // If the target will die to incoming projectiles, ignore it
-                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
-
-                    // If the target will burn to death, ignore it
-                    if (Tools.willBurnToDeath(entity)) continue
-
-                    targets.push(entity)
-
-                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0] * bot.G.skills.quickstab.damage_multiplier
-                    if (minimumDamage > entity.hp) {
-                        // Stop looking for another one to attack, since we can kill this one in one hit.
-                        targets[0] = entity
-                        break
-                    }
-                }
-
-                if (targets.length) {
-                    await bot.quickStab(targets[0].id)
-                }
-            }
-
-            if (bot.canUse("quickpunch")) {
-                const targets: EntityData[] = []
-                for (const [, entity] of bot.entities) {
-                    if (entity.cooperative !== true && entity.target && entity.target !== bot.character.id) continue // It's targeting someone else
-                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
-
-                    // If the target will die to incoming projectiles, ignore it
-                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
-
-                    // If the target will burn to death, ignore it
-                    if (Tools.willBurnToDeath(entity)) continue
-
-                    targets.push(entity)
-
-                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0] * bot.G.skills.quickpunch.damage_multiplier
-                    if (minimumDamage > entity.hp) {
-                        // Stop looking for another one to attack, since we can kill this one in one hit.
-                        targets[0] = entity
-                        break
-                    }
-                }
-
-                if (targets.length) {
-                    await bot.quickPunch(targets[0].id)
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { attackLoop() }, Math.max(10, Math.min(bot.getCooldown("attack"), bot.getCooldown("quickstab"))))
-    }
-    attackLoop()
-
-    async function invisLoop() {
-        try {
-            if (bot.socket.disconnected) return
-            if (!bot.character.s.invis && bot.canUse("invis")) await bot.invis()
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { invisLoop() }, Math.max(10, bot.getCooldown("invis")))
-    }
-    invisLoop()
-
-    async function rspeedLoop() {
-        try {
-            if (bot.socket.disconnected) return
-            for (const friend of [earthMag, earthMag2, earthMag3, earthMer, earthMer2, earthMer3, earthMer4, earthMer5, earthPal, earthPri, earthPri2, earthiverse, earthRan2, earthRan3, earthRog, earthRog2, earthWar, earthWar2]) {
-                if (!friend) continue
-                if (friend.character.s.rspeed && friend.character.s.rspeed.ms > bot.G.conditions.rspeed.duration - 60000) continue // Already has buff
-                if (Tools.distance(bot.character, friend.character) > bot.character.range) continue // Too far away to buff
-                if (bot.canUse("rspeed")) await bot.rspeed(friend.character.id)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { rspeedLoop() }, Math.max(10, bot.getCooldown("rspeed")))
-    }
-    rspeedLoop()
-
-    async function sendItemLoop() {
-        try {
-            if (bot.socket.disconnected) return
-
-            if (!earthMer || earthMer.isFull()) {
-                setTimeout(async () => { sendItemLoop() }, 10000)
-                return
-            }
-
-            const sendTo = bot.players.get(earthMer.character.id)
-            if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
-                const extraGold = bot.character.gold - 1000000
-                if (extraGold > 0) await bot.sendGold(earthMer.character.id, extraGold)
-                for (let i = 0; i < bot.character.items.length; i++) {
-                    const item = bot.character.items[i]
-                    if (!item || MAGE_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
-
-                    await bot.sendItem(earthMer.character.id, i, item.q)
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { sendItemLoop() }, 1000)
-    }
-    sendItemLoop()
-}
 
 async function startRanger(bot: Ranger) {
     console.info(`Starting ranger (${bot.character.id})`)
@@ -897,105 +748,6 @@ async function startPriest(bot: Priest) {
     darkBlessingLoop()
 }
 
-async function startMage(bot: Mage) {
-    async function attackLoop() {
-        let cooldown = 10
-        try {
-            if (bot.socket.disconnected) return
-
-            if (bot.character.rip) {
-                setTimeout(async () => { attackLoop() }, 1000)
-                return
-            }
-
-            if (bot.character.c.town) {
-                setTimeout(async () => { attackLoop() }, bot.character.c.town.ms)
-                return
-            }
-
-            if (bot.canUse("attack")) {
-                const targets: EntityData[] = []
-                for (const [, entity] of bot.entities) {
-                    if (entity.cooperative !== true && entity.target && entity.target !== bot.character.id) continue // It's targeting someone else
-                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
-
-                    // If the target will die to incoming projectiles, ignore it
-                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
-
-                    // If the target will burn to death, ignore it
-                    if (Tools.willBurnToDeath(entity)) continue
-
-                    targets.push(entity)
-
-                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
-                    if (minimumDamage > entity.hp) {
-                        // Stop looking for another one to attack, since we can kill this one in one hit.
-                        targets[0] = entity
-                        break
-                    }
-                }
-
-                if (targets.length) {
-                    if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
-                        for (const bot of [earthMag, earthMag2, earthMag3, earthMer, earthMer2, earthMer3, earthMer4, earthMer5, earthPal, earthPri, earthPri2, earthiverse, earthRan2, earthRan3, earthRog, earthRog2, earthWar, earthWar2]) {
-                            if (!bot) continue
-                            bot.entities.delete(targets[0].id)
-                        }
-                    }
-
-                    // Energize if we can
-                    if (!bot.character.s.energized) {
-                        for (const mage of [earthMag, earthMag2, earthMag3]) {
-                            if (!mage) continue // Not online
-                            if (!mage.canUse("energize")) continue // Can't energize
-                            if (mage.character.id == bot.character.id) continue // Can't energize ourself (TODO: is this true?)
-                            if (Tools.distance(bot.character, earthMag.character) > bot.G.skills.energize.range) continue // Too far away
-
-                            mage.energize(bot.character.id)
-                            break
-                        }
-                    }
-
-                    await bot.attack(targets[0].id)
-                    cooldown = bot.getCooldown("attack")
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { attackLoop() }, cooldown)
-    }
-    attackLoop()
-
-    async function sendItemLoop() {
-        try {
-            if (bot.socket.disconnected) return
-
-            if (!earthMer2 || earthMer2.isFull()) {
-                setTimeout(async () => { sendItemLoop() }, 10000)
-                return
-            }
-
-            const sendTo = bot.players.get(earthMer2.character.id)
-            if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
-                const extraGold = bot.character.gold - 1000000
-                if (extraGold > 0) await bot.sendGold(earthMer2.character.id, extraGold)
-                for (let i = 0; i < bot.character.items.length; i++) {
-                    const item = bot.character.items[i]
-                    if (!item || MAGE_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
-
-                    await bot.sendItem(earthMer2.character.id, i, item.q)
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { sendItemLoop() }, 1000)
-    }
-    sendItemLoop()
-}
 
 
 async function startWarrior(bot: Warrior) {
@@ -1149,38 +901,6 @@ async function startMerchant(bot: Merchant) {
     }
     attackLoop()
 
-    async function givePotionsLoop() {
-        try {
-            if (bot.socket.disconnected) return
-
-            for (const friend of [earthMag, earthMag2, earthMag3, earthMer, earthMer2, earthMer3, earthMer4, earthMer5, earthPal, earthPri, earthPri2, earthiverse, earthRan2, earthRan3, earthRog, earthRog2, earthWar, earthWar2]) {
-                if (!friend) continue
-                if (Tools.distance(bot.character, friend.character) > NPC_INTERACTION_DISTANCE) continue
-
-                const ourHpot1 = bot.countItem("hpot1")
-                if (ourHpot1 < 1000 && bot.canBuy("hpot1")) await bot.buy("hpot1", 1000 - ourHpot1)
-                const ourMpot1 = bot.countItem("mpot1")
-                if (ourMpot1 < 1000 && bot.canBuy("mpot1")) await bot.buy("mpot1", 1000 - ourMpot1)
-
-                const numHpot1ToGive = 1000 - friend.countItem("hpot1")
-                if (numHpot1ToGive > 0) {
-                    await bot.sendItem(friend.character.id, bot.locateItem("hpot1", bot.character.items, { quantityGreaterThan: numHpot1ToGive - 1 }))
-                }
-                const numMpot1ToGive = 1000 - friend.countItem("mpot1")
-                if (numMpot1ToGive > 0) {
-                    await bot.sendItem(friend.character.id, bot.locateItem("mpot1", bot.character.items, { quantityGreaterThan: numMpot1ToGive - 1 }))
-                }
-            }
-            // 1. look for nearby friends
-            // 2. look to see how many potions they have
-            // 3. if they have < 1000, send them some and buy more.
-        } catch (e) {
-            console.error(e)
-        }
-        setTimeout(async () => { givePotionsLoop() }, 1000)
-    }
-    givePotionsLoop()
-
     async function mluckLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -1229,7 +949,7 @@ async function startMerchant(bot: Merchant) {
             }
             if (freeSlots == 0 || lastBankVisit < Date.now() - 300000) {
                 await bot.closeMerchantStand()
-                await bot.smartMove("goldnpc")
+                await bot.smartMove("items1")
 
                 lastBankVisit = Date.now()
 
@@ -1253,109 +973,6 @@ async function startMerchant(bot: Merchant) {
                             console.error(e)
                         }
                     }
-                }
-
-                // Store information about everything in our bank to use it later to find upgradable stuff
-                const bankItems: ItemInfo[] = []
-                for (let i = 0; i <= 7; i++) {
-                    const bankPack = `items${i}` as Exclude<BankPackType, "gold">
-                    for (const item of bot.bank[bankPack]) {
-                        bankItems.push(item)
-                    }
-                }
-                let freeSpaces = bot.character.isize - bot.character.esize
-                const duplicates = bot.locateDuplicateItems(bankItems)
-
-                // Withdraw compoundable & upgradable things
-                for (const iN in duplicates) {
-                    const itemName = iN as ItemName
-                    const d = duplicates[itemName]
-                    const gInfo = bot.G.items[itemName]
-                    if (gInfo.upgrade) {
-                        // Withdraw upgradable items
-                        if (freeSpaces < 3) break // Not enough space in inventory
-
-                        const pack1 = `items${Math.floor((d[0]) / 42)}` as Exclude<BankPackType, "gold">
-                        const slot1 = d[0] % 42
-                        let withdrew = false
-                        for (let i = 1; i < d.length && freeSpaces > 2; i++) {
-                            const pack2 = `items${Math.floor((d[i]) / 42)}` as Exclude<BankPackType, "gold">
-                            const slot2 = d[i] % 42
-                            const item2 = bot.bank[pack2][slot2]
-
-                            if (item2.level >= 8) continue // We don't want to upgrade high level items automatically
-
-                            try {
-                                await bot.withdrawItem(pack2, slot2)
-                                withdrew = true
-                                freeSpaces--
-                            } catch (e) {
-                                console.error(e)
-                            }
-                        }
-                        if (withdrew) {
-                            try {
-                                await bot.withdrawItem(pack1, slot1)
-                                freeSpaces--
-                            } catch (e) {
-                                console.error(e)
-                            }
-                        }
-                    } else if (gInfo.compound) {
-                        // Withdraw compoundable items
-                        if (freeSpaces < 4) break // Not enough space in inventory
-                        if (d.length < 3) continue // Not enough to compound
-
-                        for (let i = 0; i < d.length - 2 && freeSpaces > 4; i++) {
-                            const pack1 = `items${Math.floor((d[i]) / 42)}` as Exclude<BankPackType, "gold">
-                            const slot1 = d[i] % 42
-                            const item1 = bot.bank[pack1][slot1]
-                            const pack2 = `items${Math.floor((d[i + 1]) / 42)}` as Exclude<BankPackType, "gold">
-                            const slot2 = d[i + 1] % 42
-                            const item2 = bot.bank[pack2][slot2]
-                            const pack3 = `items${Math.floor((d[i + 2]) / 42)}` as Exclude<BankPackType, "gold">
-                            const slot3 = d[i + 2] % 42
-                            const item3 = bot.bank[pack3][slot3]
-
-                            if (item1.level >= 4) continue // We don't want to comopound high level items automaticaclly
-                            if (item1.level !== item2.level) continue
-                            if (item1.level !== item3.level) continue
-
-                            // Withdraw the three items
-                            try {
-                                await bot.withdrawItem(pack1, slot1)
-                                freeSpaces--
-                                await bot.withdrawItem(pack2, slot2)
-                                freeSpaces--
-                                await bot.withdrawItem(pack3, slot3)
-                                freeSpaces--
-                            } catch (e) {
-                                console.error(e)
-                            }
-
-                            // Remove the three items from the array
-                            d.splice(i, 3)
-                            i = i - 1
-                            break
-                        }
-                    }
-                }
-
-                // Withdraw exchangable items
-                for (let i = 0; i < bankItems.length && freeSpaces > 2; i++) {
-                    const item = bankItems[i]
-                    if (!item) continue // No item
-
-                    if (!ITEMS_TO_EXCHANGE.includes(item.name)) continue // Not exchangable
-
-                    const gInfo = bot.G.items[item.name]
-                    if (item.q < gInfo.e) continue // Not enough to exchange
-
-                    // Withdraw the item
-                    const pack = `items${Math.floor(i / 42)}` as Exclude<BankPackType, "gold">
-                    const slot = i % 42
-                    await bot.withdrawItem(pack, slot)
-                    freeSpaces--
                 }
 
                 setTimeout(async () => { moveLoop() }, 250)

@@ -2672,7 +2672,7 @@ async function startMerchant(bot: Merchant) {
             }
             if (freeSlots == 0 || lastBankVisit == 0) {
                 await bot.closeMerchantStand()
-                await bot.smartMove("goldnpc")
+                await bot.smartMove("items1")
 
                 lastBankVisit = Date.now()
 
