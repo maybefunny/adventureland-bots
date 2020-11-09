@@ -2799,7 +2799,7 @@ async function startMerchant(bot: Merchant) {
     mluckLoop()
 
     let lastBankVisit = Number.MIN_VALUE
-    let lastSpecialCheckTime = Number.MIN_VALUE
+    // let lastSpecialCheckTime = Number.MIN_VALUE
     async function moveLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -2954,21 +2954,21 @@ async function startMerchant(bot: Merchant) {
             // TODO: Check for special monsters if there's another user with a monsterhunt for a special monster
             // {"s.monsterhunt.ms": {$gt: 1.74e6}, lastSeen: {$gt: Date.now() - 60000}}
 
-            // Check for special monsters every 15 minutes
-            if (lastSpecialCheckTime < Date.now() - 900000) {
-                await bot.closeMerchantStand()
-                const locations: NodeData[] = []
-                locations.push(...bot.locateMonsters("mvampire")) // Also checks goldenbat
-                locations.push(...bot.locateMonsters("fvampire"))
-                locations.push(...bot.locateMonsters("greenjr"))
-                locations.push(...bot.locateMonsters("jr"))
+            // // Check for special monsters every 15 minutes
+            // if (lastSpecialCheckTime < Date.now() - 900000) {
+            //     await bot.closeMerchantStand()
+            //     const locations: NodeData[] = []
+            //     locations.push(...bot.locateMonsters("mvampire")) // Also checks goldenbat
+            //     locations.push(...bot.locateMonsters("fvampire"))
+            //     locations.push(...bot.locateMonsters("greenjr"))
+            //     locations.push(...bot.locateMonsters("jr"))
 
-                for (const location of locations) {
-                    console.log(location)
-                    await bot.smartMove(location)
-                    lastSpecialCheckTime = Date.now()
-                }
-            }
+            //     for (const location of locations) {
+            //         console.log(location)
+            //         await bot.smartMove(location)
+            //         lastSpecialCheckTime = Date.now()
+            //     }
+            // }
 
             // Move to our friends if they have lots of items (they'll send them over)
             for (const friend of [priest, ranger, warrior]) {
