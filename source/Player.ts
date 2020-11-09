@@ -241,7 +241,7 @@ export class Player extends Observer {
                 delete this.character.q.compound
 
             // else if (data.type == "exchange" && this.character.q.exchange) delete this.character.q.exchange
-            else if (data.type == "upgrade" && this.character.q.upgrade)
+            else if (data.type == "upgrade" && this .character.q.upgrade)
                 delete this.character.q.upgrade
         })
 

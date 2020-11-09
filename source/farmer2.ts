@@ -648,7 +648,7 @@ async function startMerchant(bot: Merchant) {
                 lastBankVisit = Date.now()
 
                 // Deposit excess gold
-                const excessGold = bot.character.gold - 10000000
+                const excessGold = bot.character.gold - 100000000
                 if (excessGold > 0) {
                     await bot.depositGold(excessGold)
                 } else if (excessGold < 0) {
