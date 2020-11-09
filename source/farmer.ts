@@ -513,7 +513,7 @@ async function startRanger(bot: Ranger) {
                         if (!mage) continue // Not online
                         if (!mage.canUse("energize")) continue // Can't energize
                         if (mage.character.id == bot.character.id) continue // Can't energize ourself (TODO: is this true?)
-                        if (Tools.distance(bot.character, earthMag.character) > bot.G.skills.energize.range) continue // Too far away
+                        if (Tools.distance(bot.character, mage.character) > bot.G.skills.energize.range) continue // Too far away
 
                         mage.energize(bot.character.id)
                         break
