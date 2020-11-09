@@ -692,6 +692,13 @@ async function startMage(bot: Mage, n: number) {
                     }
                 }
 
+                if (await Tools.isGuaranteedKill(bot.character, target)) {
+                    for (const bot of [earthMag, earthMag2, earthMag3, earthMer3]) {
+                        if (!bot) continue
+                        bot.entities.delete(target.id)
+                    }
+                }
+
                 await bot.attack(target.id)
             }
         } catch (e) {
