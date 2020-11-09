@@ -21,7 +21,7 @@ export class Tools {
                 cost *= 3 // Three of the current level items are required
                 let scrollLevel = 0
                 for (const grade of gInfo.grades) {
-                    if (item.level < grade) {
+                    if (i + 1 < grade) {
                         const scrollInfo = G.items[`cscroll${scrollLevel}` as ItemName]
                         cost += scrollInfo.g
                         break
@@ -33,7 +33,7 @@ export class Tools {
             for (let i = 0; i < item.level; i++) {
                 let scrollLevel = 0
                 for (const grade of gInfo.grades) {
-                    if (item.level < grade) {
+                    if (i + 1 < grade) {
                         const scrollInfo = G.items[`scroll${scrollLevel}` as ItemName]
                         cost += scrollInfo.g
                         break
