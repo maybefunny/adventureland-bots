@@ -203,7 +203,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
         try {
             if (bot.socket.disconnected) return
 
-            // TODO: Make bot.canExchange() function and replace the following line with thatF
+            // TODO: Make bot.canExchange() function and replace the following line with that
             const hasComputer = bot.locateItem("computer") !== undefined
 
             if (hasComputer) {

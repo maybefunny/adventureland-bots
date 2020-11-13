@@ -1,32 +1,27 @@
-import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MAGE_ITEMS_TO_HOLD, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE } from "./constants.js"
-import { CharacterModel } from "./database/characters/characters.model.js"
+import { NPC_INTERACTION_DISTANCE, ITEMS_TO_BUY, ITEMS_TO_SELL, ITEMS_TO_EXCHANGE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD } from "./constants.js"
 import { EntityData, HitData } from "./definitions/adventureland-server.js"
-import { ItemName, MonsterName, ServerIdentifier, ServerRegion, TradeSlotType } from "./definitions/adventureland.js"
+import { IPosition, ItemName, ServerIdentifier, ServerRegion, TradeSlotType } from "./definitions/adventureland.js"
 import { Game } from "./Game.js"
 import { Merchant } from "./Merchant.js"
-import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 import { Pathfinder } from "./Pathfinder.js"
+import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
+import { Priest } from "./Priest.js"
+import { Ranger } from "./Ranger.js"
 import { Tools } from "./Tools.js"
-import { Mage } from "./Mage.js"
-import { EntityModel } from "./database/entities/entities.model.js"
 
-const region: ServerRegion = "ASIA"
-const identifier: ServerIdentifier = "I"
+/**
+ * NOTE: The only weapon the merchant can attack with is the golden gun, so this script only works for hazarding a golden gun.
+ */
 
-let earthMag: Mage
-let earthMag2: Mage
-let earthMag3: Mage
-let earthMer3: Merchant
+const FARMING_TARGET = "scorpion"
+const FARMING_POSITION: IPosition = { map: "desertland", x: 390, y: -1422 }
+
+let earthMer: Merchant
+let earthPri: Priest
+let earthPri2: Priest
+let earthiverse: Ranger
 
 async function generalBotStuff(bot: PingCompensatedPlayer) {
-    bot.socket.on("magiport", async (data: { name: string }) => {
-        if (["earthMag", "earthMag2", "earthMag3"].includes(data.name)) {
-            if (bot.character.c.town) await bot.stopWarpToTown()
-            await bot.acceptMagiport(data.name)
-            return
-        }
-    })
-
     async function buyLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -164,24 +159,6 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
     }
     compoundLoop()
 
-    async function elixirLoop() {
-        try {
-            if (bot.socket.disconnected) return
-            if (bot.character.ctype == "merchant") return // Don't buy or equip an elixir if we're a merchant.
-
-            if (!bot.character.slots.elixir) {
-                let luckElixir = bot.locateItem("elixirluck")
-                if (luckElixir == undefined && bot.canBuy("elixirluck")) luckElixir = await bot.buy("elixirluck")
-                if (luckElixir !== undefined) await bot.equip(luckElixir)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { elixirLoop() }, 1000)
-    }
-    elixirLoop()
-
     async function exchangeLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -216,7 +193,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
             if (bot.socket.disconnected) return
             if (!bot.hasItem("computer")) return // Don't give potions if we don't have a computer
 
-            for (const friend of [earthMag, earthMag2, earthMag3, earthMer3]) {
+            for (const friend of [earthMer, earthPri, earthPri2]) {
                 if (!friend) continue
                 if (Tools.distance(bot.character, friend.character) > NPC_INTERACTION_DISTANCE) continue
 
@@ -319,10 +296,9 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
         try {
             if (bot.socket.disconnected) return
 
-            for (const merchant of [earthMer3]) {
-                if (!merchant) continue
-                if (bot.party && bot.party.list && bot.party.list[0] !== merchant.character.id) bot.leaveParty()
-                if (!bot.party) bot.sendPartyRequest(merchant.character.id)
+            if (earthMer) {
+                if (bot.party && bot.party.list && bot.party.list[0] !== earthMer.character.id) bot.leaveParty()
+                if (!bot.party) bot.sendPartyRequest(earthMer.character.id)
             }
         } catch (e) {
             console.error(e)
@@ -409,290 +385,53 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 }
 
 async function startMerchant(bot: Merchant) {
-    bot.socket.on("request", (data: { name: string }) => {
-        bot.acceptPartyRequest(data.name)
-    })
-
     async function attackLoop() {
         try {
             if (bot.socket.disconnected) return
 
-            if (bot.character.targets > 0) {
-                if (bot.canUse("scare")) {
-                    await bot.scare()
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { attackLoop() }, 250)
-    }
-    attackLoop()
-
-    async function mluckLoop() {
-        try {
-            if (bot.socket.disconnected) return
-
-            if (bot.canUse("mluck")) {
-                if (!bot.character.s.mluck || bot.character.s.mluck.f !== bot.character.id) await bot.mluck(bot.character.id) // mluck ourselves
-
-                for (const [, player] of bot.players) {
-                    if (Tools.distance(bot.character, player) > bot.G.skills.mluck.range) continue // Too far away to mluck
-                    if (player.npc) continue // It's an NPC, we can't mluck NPCs.
-
-                    if (!player.s.mluck) {
-                        await bot.mluck(player.id) // Give the mluck 
-                    } else if (!player.s.mluck.strong && player.s.mluck.f !== bot.character.id) {
-                        await bot.mluck(player.id) // Steal the mluck
-                    } else if ((!player.s.mluck.strong && player.s.mluck.ms < (bot.G.conditions.mluck.duration - 60000))
-                        || (player.s.mluck.strong && player.s.mluck.f == bot.character.id && player.s.mluck.ms < (bot.G.conditions.mluck.duration - 60000))) {
-                        await bot.mluck(player.id) // Extend the mluck
-                    }
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { mluckLoop() }, 250)
-    }
-    mluckLoop()
-
-    let lastBankVisit = Number.MIN_VALUE
-    async function moveLoop() {
-        try {
-            if (bot.socket.disconnected) return
-
-            // If we are dead, respawn
             if (bot.character.rip) {
-                await bot.respawn()
-                setTimeout(async () => { moveLoop() }, 1000)
+                setTimeout(async () => { attackLoop() }, 1000)
                 return
-            }
-
-            // If we are full, let's go to the bank
-            let freeSlots = 0
-            for (const item of bot.character.items) {
-                if (!item) freeSlots++
-            }
-            if (freeSlots == 0 || lastBankVisit < Date.now() - 300000) {
-                await bot.closeMerchantStand()
-                await bot.smartMove("items1")
-
-                lastBankVisit = Date.now()
-
-                // Deposit excess gold
-                const excessGold = bot.character.gold - 10000000
-                if (excessGold > 0) {
-                    await bot.depositGold(excessGold)
-                } else if (excessGold < 0) {
-                    await bot.withdrawGold(-excessGold)
-                }
-
-                // Deposit items
-                for (let i = 0; i < bot.character.items.length; i++) {
-                    const item = bot.character.items[i]
-                    if (!item) continue
-                    if (!MERCHANT_ITEMS_TO_HOLD.includes(item.name)) {
-                        // Deposit it in the bank
-                        try {
-                            await bot.depositItem(i)
-                        } catch (e) {
-                            console.error(e)
-                        }
-                    }
-                }
-
-                setTimeout(async () => { moveLoop() }, 250)
-                return
-            }
-
-            // Move to our friends if they have lots of items (they'll send them over)
-            for (const friend of [earthMag, earthMag2, earthMag3, earthMer3]) {
-                if (!friend) continue
-
-                // Check if they're full, or they need mluck
-                if (friend.isFull() || (bot.canUse("mluck") && (!friend.character.s.mluck || friend.character.s.mluck.ms < 120000 || friend.character.s.mluck.f !== bot.character.id))) {
-                    await bot.closeMerchantStand()
-                    console.log(`[merchant] We are moving to ${friend.character.id}!`)
-                    await bot.smartMove(friend.character, { getWithin: bot.G.skills.mluck.range / 2 })
-
-                    setTimeout(async () => { moveLoop() }, 250)
-                    return
-                }
-            }
-
-            // MLuck people if there is a server info target
-            for (const mN in bot.S) {
-                const type = mN as MonsterName
-                if (!bot.S[type].live) continue
-                if (!bot.S[type].target) continue
-
-                await bot.closeMerchantStand()
-                await bot.smartMove(bot.S[type], { getWithin: 100 })
-
-                setTimeout(async () => { moveLoop() }, 250)
-                return
-            }
-
-            // Find other characters that need mluck and go find them
-            if (bot.canUse("mluck")) {
-                const charactersToMluck = await CharacterModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 }, $or: [{ "s.mluck": undefined }, { "s.mluck.strong": undefined, "s.mluck.f": { "$ne": bot.character.id } }] }).lean().exec()
-                for (const character of charactersToMluck) {
-                    // Move to them, and we'll automatically mluck them
-                    await bot.closeMerchantStand()
-                    console.log(`[merchant] We are moving to ${character.name} to mluck them!`)
-                    await bot.smartMove(character, { getWithin: bot.G.skills.mluck.range / 2 })
-
-                    setTimeout(async () => { moveLoop() }, 250)
-                    return
-                }
-            }
-
-            // Hang out in town
-            await bot.smartMove("main")
-            await bot.openMerchantStand()
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { moveLoop() }, 250)
-    }
-    moveLoop()
-
-    async function tradeLoop() {
-        try {
-            if (bot.socket.disconnected) return
-
-            const mhTokens = bot.locateItem("monstertoken")
-            if (mhTokens !== undefined && bot.character.stand) {
-                if (bot.character.slots.trade1) await bot.unequip("trade1")
-
-                const numTokens = bot.character.items[mhTokens].q
-
-                await bot.listForSale(mhTokens, "trade1", 250000, numTokens)
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { tradeLoop() }, 250)
-    }
-    tradeLoop()
-}
-
-async function startMage(bot: Mage, n: number) {
-    const lastMagiportOffer: { [T in string]: number } = {}
-
-    async function moveLoop() {
-        try {
-            if (bot.socket.disconnected) return
-
-            // If we are dead, respawn
-            if (bot.character.rip) {
-                await bot.respawn()
-                setTimeout(async () => { moveLoop() }, 1000)
-                return
-            }
-
-            // See if we are close to a phoenix
-            for (const [, entity] of bot.entities) {
-                if (entity.type !== "phoenix") continue
-                if (Tools.distance(bot.character, entity) >= bot.character.range) {
-                    await bot.smartMove(entity, { useBlink: true })
-                } else if (entity.hp > entity.max_hp * 0.25) {
-                    // Offer magiports to other mages
-                    for (const mage of [earthMag, earthMag2, earthMag3]) {
-                        if (!mage) continue
-                        if (mage.character.id == bot.character.id) continue // Don't offer a magiport to ourselves
-                        if (bot.players.has(mage.character.id)) continue // Already close
-
-                        // Offer magiport if they're far away
-                        if (bot.canUse("magiport") && (!lastMagiportOffer[mage.character.id] || lastMagiportOffer[mage.character.id] < Date.now() - 30000)) {
-                            lastMagiportOffer[mage.character.id] = Date.now()
-                            bot.magiport(mage.character.id)
-                        }
-                    }
-                }
-                setTimeout(async () => { moveLoop() }, 250)
-                return
-            }
-
-            // See if we have spotted a phoenix in our database
-            const target = await EntityModel.findOne({ serverRegion: region, serverIdentifier: identifier, type: "phoenix", lastSeen: { $gt: Date.now() - 30000 } }).lean().exec()
-            if (target) {
-                await bot.smartMove(target, { useBlink: true })
-            } else {
-                const locations = bot.locateMonsters("phoenix")
-                if (n == 0) {
-                    await bot.smartMove(locations[2]) // western main spawn
-                } else if (n == 1) {
-                    if (Tools.distance(bot.character, locations[4]) < 250) {
-                        await bot.smartMove(locations[1]) // armadillo main spawn
-                    } else {
-                        await bot.smartMove(locations[4]) // bat cave spawn
-                    }
-                } else if (n == 2) {
-                    if (Tools.distance(bot.character, locations[0]) < 250) {
-                        await bot.smartMove(locations[3]) // minimush halloween spawn
-                    } else {
-                        await bot.smartMove(locations[0]) // spider main spawn
-                    }
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setTimeout(async () => { moveLoop() }, 250)
-    }
-    moveLoop()
-
-    async function attackLoop() {
-        try {
-            if (bot.socket.disconnected) return
-
-            if (bot.character.targets > 2 && bot.canUse("scare")) {
-                await bot.scare()
-            }
-
-            let target: EntityData
-            for (const [, entity] of bot.entities) {
-                if (entity.type == "phoenix") {
-                    if (Tools.distance(bot.character, entity) < bot.character.range) target = entity
-                    break
-                }
-                if (Tools.distance(bot.character, entity) < bot.character.range &&
-                    (["armadillo", "bat", "bee", "crab", "crabx", "croc", "fieldgen0", "frog", "goo", "minimush", "poisio", "scorpion", "spider", "squig", "squigtoad", "tortoise"] as MonsterName[]).includes(entity.type)) {
-                    target = entity
-                }
             }
 
             if (bot.character.c.town) {
-                if (target && target.type == "phoenix") {
-                    bot.stopWarpToTown()
-                } else {
-                    setTimeout(async () => { attackLoop() }, 50)
-                    return
-                }
+                setTimeout(async () => { attackLoop() }, bot.character.c.town.ms)
+                return
             }
 
-            if (target && bot.canUse("attack")) {
-                // Energize if we can
-                if (!bot.character.s.energized) {
-                    for (const mage of [earthMag, earthMag2, earthMag3]) {
-                        if (!mage) continue // Not online
-                        if (!mage.canUse("energize")) continue // Can't energize
-                        if (mage.character.id == bot.character.id) continue // Can't energize ourself (TODO: is this true?)
-                        if (Tools.distance(bot.character, earthMag.character) > bot.G.skills.energize.range) continue // Too far away
+            if (bot.canUse("attack")) {
+                const targets: EntityData[] = []
+                for (const [, entity] of bot.entities) {
+                    if (entity.cooperative !== true && entity.target) continue // It's targeting someone
+                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
 
-                        mage.energize(bot.character.id)
+                    // If the target will die to incoming projectiles, ignore it
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
+
+                    if (entity.type !== FARMING_TARGET) continue
+
+                    targets.push(entity)
+
+                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
+                    if (minimumDamage > entity.hp) {
+                        // Stop looking for another one to attack, since we can kill this one in one hit.
+                        targets[0] = entity
                         break
                     }
                 }
 
-                await bot.attack(target.id)
+                if (targets.length) {
+                    if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
+                        for (const bot of [earthMer, earthPri, earthPri2]) {
+                            if (!bot) continue
+                            bot.entities.delete(targets[0].id)
+                        }
+                    }
+                    await bot.attack(targets[0].id)
+                }
             }
         } catch (e) {
             console.error(e)
@@ -702,24 +441,262 @@ async function startMage(bot: Mage, n: number) {
     }
     attackLoop()
 
+    async function moveLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (Tools.distance(bot.character, FARMING_POSITION) > bot.character.range) {
+                await bot.smartMove(FARMING_POSITION)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { moveLoop() }, 250)
+    }
+    moveLoop()
+}
+
+async function startPriest(bot: Priest) {
+    async function attackLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (bot.character.rip) {
+                setTimeout(async () => { attackLoop() }, 1000)
+                return
+            }
+
+            if (bot.canUse("heal")) {
+                // Heal party members if they are close
+                let target: PingCompensatedPlayer
+                for (const friend of [earthMer, earthPri, earthPri2]) {
+                    if (!friend) continue // Not up
+                    if (friend.character.hp > friend.character.max_hp * 0.8) continue // Lots of health, no need to heal
+                    if (Tools.distance(bot.character, friend.character) > bot.character.range) continue // Too far away to heal
+
+                    target = friend
+                    break
+                }
+                if (target) {
+                    await bot.heal(target.character.id)
+                    setTimeout(async () => { attackLoop() }, bot.getCooldown("heal"))
+                    return
+                }
+            }
+
+            if (bot.character.c.town) {
+                setTimeout(async () => { attackLoop() }, bot.character.c.town.ms)
+                return
+            }
+
+            if (bot.canUse("attack")) {
+                const targets: EntityData[] = []
+                for (const [, entity] of bot.entities) {
+                    if (entity.target !== earthMer.character.id) continue // Only attack those targeting our merchant
+                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
+
+                    // If the target will die to incoming projectiles, ignore it
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
+
+                    if (entity.type !== FARMING_TARGET) continue
+
+                    targets.push(entity)
+
+                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
+                    if (minimumDamage > entity.hp) {
+                        // Stop looking for another one to attack, since we can kill this one in one hit.
+                        targets[0] = entity
+                        break
+                    }
+                }
+
+                if (targets.length) {
+                    if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
+                        for (const bot of [earthMer, earthPri, earthPri2]) {
+                            if (!bot) continue
+                            bot.entities.delete(targets[0].id)
+                        }
+                    }
+                    await bot.attack(targets[0].id)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack")))
+    }
+    attackLoop()
+
+    async function moveLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (Tools.distance(bot.character, FARMING_POSITION) > bot.character.range / 2) {
+                const NEW_FARMING_POSITION = {
+                    map: FARMING_POSITION.map,
+                    x: FARMING_POSITION.x - bot.character.range / 2 + (Math.random() * bot.character.range),
+                    y: FARMING_POSITION.y - bot.character.range / 2 + (Math.random() * bot.character.range)
+                }
+
+                await bot.smartMove(NEW_FARMING_POSITION)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { moveLoop() }, 250)
+    }
+    moveLoop()
+
     async function sendItemLoop() {
         try {
             if (bot.socket.disconnected) return
 
-            if (!earthMer3 || earthMer3.isFull()) {
+            if (!earthMer || earthMer.isFull()) {
                 setTimeout(async () => { sendItemLoop() }, 10000)
                 return
             }
 
-            const sendTo = bot.players.get(earthMer3.character.id)
+            const sendTo = bot.players.get(earthMer.character.id)
             if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
                 const extraGold = bot.character.gold - 1000000
-                if (extraGold > 0) await bot.sendGold(earthMer3.character.id, extraGold)
+                if (extraGold > 0) await bot.sendGold(earthMer.character.id, extraGold)
                 for (let i = 0; i < bot.character.items.length; i++) {
                     const item = bot.character.items[i]
-                    if (!item || MAGE_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
+                    if (!item || PRIEST_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
 
-                    await bot.sendItem(earthMer3.character.id, i, item.q)
+                    await bot.sendItem(earthMer.character.id, i, item.q)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { sendItemLoop() }, 1000)
+    }
+    sendItemLoop()
+
+    async function partyHealLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (bot.character.c.town) {
+                setTimeout(async () => { partyHealLoop() }, bot.character.c.town.ms)
+                return
+            }
+
+            if (bot.canUse("partyheal")) {
+                for (const friend of [earthMer, earthPri, earthPri2]) {
+                    if (!friend || !friend.party || !friend.party.list.includes(bot.character.id)) continue // We aren't in the party!?
+                    if (friend.character.hp < friend.character.max_hp * 0.5) {
+                        // Someone in our party has low HP
+                        await bot.partyHeal()
+                        break
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { partyHealLoop() }, 250)
+    }
+    partyHealLoop()
+}
+
+
+async function startRanger(bot: Ranger) {
+    async function attackLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (bot.character.rip) {
+                setTimeout(async () => { attackLoop() }, 1000)
+                return
+            }
+
+            if (bot.character.c.town) {
+                setTimeout(async () => { attackLoop() }, bot.character.c.town.ms)
+                return
+            }
+
+            if (bot.canUse("attack")) {
+                const targets: EntityData[] = []
+                for (const [, entity] of bot.entities) {
+                    if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
+
+                    // If the target will die to incoming projectiles, ignore it
+                    if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
+
+                    // If the target will burn to death, ignore it
+                    if (Tools.willBurnToDeath(entity)) continue
+
+                    if (entity.type !== "porcupine") continue
+
+                    targets.push(entity)
+
+                    const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
+                    if (minimumDamage > entity.hp) {
+                        // Stop looking for another one to attack, since we can kill this one in one hit.
+                        targets[0] = entity
+                        break
+                    }
+                }
+
+                if (targets.length) {
+                    if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
+                        for (const bot of [earthMer, earthPri, earthPri2]) {
+                            if (!bot) continue
+                            bot.entities.delete(targets[0].id)
+                        }
+                    }
+                    await bot.attack(targets[0].id)
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { attackLoop() }, Math.max(10, bot.getCooldown("attack")))
+    }
+    attackLoop()
+
+    async function moveLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            await bot.smartMove("porcupine")
+        } catch (e) {
+            console.error(e)
+        }
+
+        setTimeout(async () => { moveLoop() }, 1000)
+    }
+    moveLoop()
+
+    async function sendItemLoop() {
+        try {
+            if (bot.socket.disconnected) return
+
+            if (!earthMer || earthMer.isFull()) {
+                setTimeout(async () => { sendItemLoop() }, 10000)
+                return
+            }
+
+            const sendTo = bot.players.get(earthMer.character.id)
+            if (sendTo && Tools.distance(bot.character, sendTo) < NPC_INTERACTION_DISTANCE) {
+                const extraGold = bot.character.gold - 1000000
+                if (extraGold > 0) await bot.sendGold(earthMer.character.id, extraGold)
+                for (let i = 0; i < bot.character.items.length; i++) {
+                    const item = bot.character.items[i]
+                    if (!item || RANGER_ITEMS_TO_HOLD.includes(item.name)) continue // Don't send important items
+
+                    await bot.sendItem(earthMer.character.id, i, item.q)
                 }
             }
         } catch (e) {
@@ -731,65 +708,61 @@ async function startMage(bot: Mage, n: number) {
     sendItemLoop()
 }
 
-async function run() {
+async function run(region: ServerRegion, identifier: ServerIdentifier, merchantName: string, priest1Name: string, priest2Name: string, rangerName: string) {
     await Promise.all([Game.loginJSONFile("../credentials.json"), Pathfinder.prepare()])
 
-    try {
-        const loop_earthMag = async () => {
-            try {
-                await Game.stopCharacter("earthMag")
-                earthMag = await Game.startMage("earthMag", region, identifier)
-                earthMag.socket.on("disconnect", async () => { await loop_earthMag() })
-                startMage(earthMag, 0)
-                generalBotStuff(earthMag)
-            } catch (e) {
-                await Game.stopCharacter("earthMag")
-                setTimeout(async () => { await loop_earthMag() }, 1000)
-            }
+    const loop_earthMer = async () => {
+        try {
+            await Game.stopCharacter(merchantName)
+            earthMer = await Game.startMerchant(merchantName, region, identifier)
+            earthMer.socket.on("disconnect", async () => { await loop_earthMer() })
+            startMerchant(earthMer)
+            generalBotStuff(earthMer)
+        } catch (e) {
+            await Game.stopCharacter(merchantName)
+            setTimeout(async () => { await loop_earthMer() }, 1000)
         }
-        const loop_earthMag2 = async () => {
-            try {
-                await Game.stopCharacter("earthMag2")
-                earthMag2 = await Game.startMage("earthMag2", region, identifier)
-                earthMag2.socket.on("disconnect", async () => { await loop_earthMag2() })
-                startMage(earthMag2, 1)
-                generalBotStuff(earthMag2)
-            } catch (e) {
-                await Game.stopCharacter("earthMag2")
-                setTimeout(async () => { await loop_earthMag2() }, 1000)
-            }
-        }
-        const loop_earthMag3 = async () => {
-            try {
-                await Game.stopCharacter("earthMag3")
-                earthMag3 = await Game.startMage("earthMag3", region, identifier)
-                earthMag3.socket.on("disconnect", async () => { await loop_earthMag3() })
-                startMage(earthMag3, 2)
-                generalBotStuff(earthMag3)
-            } catch (e) {
-                await Game.stopCharacter("earthMag3")
-                setTimeout(async () => { await loop_earthMag3() }, 1000)
-            }
-        }
-        const loop_earthMer3 = async () => {
-            try {
-                await Game.stopCharacter("earthMer3")
-                earthMer3 = await Game.startMerchant("earthMer3", region, identifier)
-                earthMer3.socket.on("disconnect", async () => { await loop_earthMer3() })
-                startMerchant(earthMer3)
-                generalBotStuff(earthMer3)
-            } catch (e) {
-                await Game.stopCharacter("earthMer3")
-                setTimeout(async () => { await loop_earthMer3() }, 1000)
-            }
-        }
-
-        loop_earthMag()
-        loop_earthMag2()
-        loop_earthMag3()
-        loop_earthMer3()
-    } catch (e) {
-        await Game.disconnect(false)
     }
+    const loop_earthPri = async () => {
+        try {
+            await Game.stopCharacter(priest1Name)
+            earthPri = await Game.startPriest(priest1Name, region, identifier)
+            earthPri.socket.on("disconnect", async () => { await loop_earthPri() })
+            startPriest(earthPri)
+            generalBotStuff(earthPri)
+        } catch (e) {
+            await Game.stopCharacter(priest1Name)
+            setTimeout(async () => { await loop_earthPri() }, 1000)
+        }
+    }
+    const loop_earthPri2 = async () => {
+        try {
+            await Game.stopCharacter(priest2Name)
+            earthPri2 = await Game.startPriest(priest2Name, region, identifier)
+            earthPri2.socket.on("disconnect", async () => { await loop_earthPri2() })
+            startPriest(earthPri2)
+            generalBotStuff(earthPri2)
+        } catch (e) {
+            await Game.stopCharacter(priest2Name)
+            setTimeout(async () => { await loop_earthPri2() }, 1000)
+        }
+    }
+    const loop_earthiverse = async () => {
+        try {
+            await Game.stopCharacter(rangerName)
+            earthiverse = await Game.startRanger(rangerName, region, identifier)
+            earthiverse.socket.on("disconnect", async () => { await loop_earthiverse() })
+            startRanger(earthiverse)
+            generalBotStuff(earthiverse)
+        } catch (e) {
+            await Game.stopCharacter(rangerName)
+            setTimeout(async () => { await loop_earthiverse() }, 1000)
+        }
+    }
+
+    loop_earthMer()
+    loop_earthPri()
+    loop_earthPri2()
+    loop_earthiverse()
 }
-run()
+run("US", "I", "earthMer", "earthPri", "earthPri2", "earthiverse")
