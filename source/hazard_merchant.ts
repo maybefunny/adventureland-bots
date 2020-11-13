@@ -385,6 +385,10 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 }
 
 async function startMerchant(bot: Merchant) {
+    bot.socket.on("request", (data: { name: string }) => {
+        bot.acceptPartyRequest(data.name)
+    })
+
     async function attackLoop() {
         try {
             if (bot.socket.disconnected) return
@@ -627,8 +631,12 @@ async function startRanger(bot: Ranger) {
 
             if (bot.canUse("attack")) {
                 const targets: EntityData[] = []
+                const threeshotTargets: EntityData[] = []
+                const fiveshotTargets: EntityData[] = []
                 for (const [, entity] of bot.entities) {
+                    if (entity.type !== "porcupine") continue
                     if (Tools.distance(bot.character, entity) > bot.character.range) continue // Only attack those in range
+                    if (entity.cooperative !== true && entity.target && entity.target !== bot.character.id) continue // It's targeting someone else
 
                     // If the target will die to incoming projectiles, ignore it
                     if (Tools.willDieToProjectiles(entity, bot.projectiles)) continue
@@ -636,26 +644,33 @@ async function startRanger(bot: Ranger) {
                     // If the target will burn to death, ignore it
                     if (Tools.willBurnToDeath(entity)) continue
 
-                    if (entity.type !== "porcupine") continue
-
                     targets.push(entity)
 
+                    // If we can kill enough monsters in one shot, let's try to do that
                     const minimumDamage = Tools.calculateDamageRange(bot.character, entity)[0]
-                    if (minimumDamage > entity.hp) {
-                        // Stop looking for another one to attack, since we can kill this one in one hit.
-                        targets[0] = entity
-                        break
-                    }
+                    if (entity.hp < minimumDamage * bot.G.skills["3shot"].damage_multiplier) threeshotTargets.push(entity)
+                    if (entity.hp < minimumDamage * bot.G.skills["5shot"].damage_multiplier) fiveshotTargets.push(entity)
                 }
 
-                if (targets.length) {
-                    if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
-                        for (const bot of [earthMer, earthPri, earthPri2]) {
-                            if (!bot) continue
-                            bot.entities.delete(targets[0].id)
-                        }
+                if (fiveshotTargets.length >= 5 && bot.canUse("5shot")) {
+                    await bot.fiveShot(fiveshotTargets[0].id, fiveshotTargets[1].id, fiveshotTargets[2].id, fiveshotTargets[3].id, fiveshotTargets[4].id)
+                } else if (threeshotTargets.length >= 3 && bot.canUse("3shot")) {
+                    await bot.threeShot(threeshotTargets[0].id, threeshotTargets[1].id, threeshotTargets[2].id)
+                } else if (targets.length) {
+                    if (bot.canUse("huntersmark")) {
+                        await bot.huntersMark(targets[0].id)
                     }
-                    await bot.attack(targets[0].id)
+
+                    // If we can do more damage with a piercingshot, use that
+                    const gInfo = bot.G.skills.piercingshot
+                    const piercingShotEntity = { ...targets[0] }
+                    piercingShotEntity.armor -= gInfo.apiercing
+                    if (bot.canUse("piercingshot")
+                        && Tools.calculateDamageRange(bot.character, piercingShotEntity)[0] * gInfo.damage_multiplier > Tools.calculateDamageRange(bot.character, targets[0])[0]) {
+                        await bot.piercingShot(targets[0].id)
+                    } else {
+                        await bot.attack(targets[0].id)
+                    }
                 }
             }
         } catch (e) {
