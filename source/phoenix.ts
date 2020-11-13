@@ -483,7 +483,7 @@ async function startMerchant(bot: Merchant) {
                 lastBankVisit = Date.now()
 
                 // Deposit excess gold
-                const excessGold = bot.character.gold - 10000000
+                const excessGold = bot.character.gold - 100000000
                 if (excessGold > 0) {
                     await bot.depositGold(excessGold)
                 } else if (excessGold < 0) {
@@ -685,10 +685,17 @@ async function startMage(bot: Mage, n: number) {
                         if (!mage) continue // Not online
                         if (!mage.canUse("energize")) continue // Can't energize
                         if (mage.character.id == bot.character.id) continue // Can't energize ourself (TODO: is this true?)
-                        if (Tools.distance(bot.character, earthMag.character) > bot.G.skills.energize.range) continue // Too far away
+                        if (Tools.distance(bot.character, mage.character) > bot.G.skills.energize.range) continue // Too far away
 
                         mage.energize(bot.character.id)
                         break
+                    }
+                }
+
+                if (await Tools.isGuaranteedKill(bot.character, target)) {
+                    for (const bot of [earthMag, earthMag2, earthMag3, earthMer3]) {
+                        if (!bot) continue
+                        bot.entities.delete(target.id)
                     }
                 }
 
