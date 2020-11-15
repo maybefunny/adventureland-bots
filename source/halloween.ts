@@ -241,7 +241,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
             const hpot1 = bot.locateItem("hpot1")
             const hpot0 = bot.locateItem("hpot0")
             const mpot1 = bot.locateItem("mpot1")
-            const mpot0 = bot.locateItem("hpot0")
+            const mpot0 = bot.locateItem("mpot0")
             if (hpRatio < mpRatio) {
                 if (missingHP >= 400 && hpot1 !== undefined) {
                     await bot.useHPPot(hpot1)

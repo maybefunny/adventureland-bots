@@ -64,6 +64,16 @@ export class Player extends Observer {
             this.chests.delete(data.id)
         })
 
+        // TODO: Create a CorrectionData object
+        this.socket.on("correction", (data: {x: number, y: number}) => {
+            console.log("----- LOCATION CORRECTION -----")
+            console.log(data)
+            
+            this.updatePositions()
+            this.character.x = data.x
+            this.character.y = data.y
+        })
+
         this.socket.on("death", (data: DeathData) => {
             const entity = this.entities.get(data.id)
 
