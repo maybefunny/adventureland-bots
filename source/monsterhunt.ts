@@ -1218,15 +1218,18 @@ async function startRanger(bot: Ranger) {
             if (!bot.character.s.monsterhunt) {
                 // Move to monsterhunter if there's no MH
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
+                await bot.leaveParty()
                 await bot.getMonsterHuntQuest()
+                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             } else if (bot.character.s.monsterhunt.c == 0) {
                 // Move to monsterhunter if we are finished the quest
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
-                // TODO: Implement finishMonsterHuntQuest()
                 await bot.finishMonsterHuntQuest()
+                await bot.leaveParty()
                 await bot.getMonsterHuntQuest()
+                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             }
@@ -1914,15 +1917,18 @@ async function startPriest(bot: Priest) {
             if (!bot.character.s.monsterhunt) {
                 // Move to monsterhunter if there's no MH
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
+                await bot.leaveParty()
                 await bot.getMonsterHuntQuest()
+                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             } else if (bot.character.s.monsterhunt.c == 0) {
                 // Move to monsterhunter if we are finished the quest
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
-                // TODO: Implement finishMonsterHuntQuest()
                 await bot.finishMonsterHuntQuest()
+                await bot.leaveParty()
                 await bot.getMonsterHuntQuest()
+                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             }
@@ -2706,15 +2712,18 @@ async function startWarrior(bot: Warrior) {
             if (!bot.character.s.monsterhunt) {
                 // Move to monsterhunter if there's no MH
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
-                bot.getMonsterHuntQuest()
+                await bot.leaveParty()
+                await bot.getMonsterHuntQuest()
+                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             } else if (bot.character.s.monsterhunt.c == 0) {
                 // Move to monsterhunter if we are finished the quest
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
-                // TODO: Implement finishMonsterHuntQuest()
-                bot.finishMonsterHuntQuest()
-                bot.getMonsterHuntQuest()
+                await bot.finishMonsterHuntQuest()
+                await bot.leaveParty()
+                await bot.getMonsterHuntQuest()
+                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             }
