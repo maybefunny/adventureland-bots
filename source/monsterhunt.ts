@@ -334,7 +334,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
         try {
             if (bot.socket.disconnected) return
 
-            if (!bot.party) {
+            if (!bot.party || !bot.party.list) {
                 bot.sendPartyRequest(merchant.character.id)
             } else if (bot.party.list[0] !== merchant.character.id) {
                 bot.leaveParty()
