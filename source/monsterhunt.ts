@@ -1218,18 +1218,14 @@ async function startRanger(bot: Ranger) {
             if (!bot.character.s.monsterhunt) {
                 // Move to monsterhunter if there's no MH
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
-                await bot.leaveParty()
                 await bot.getMonsterHuntQuest()
-                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             } else if (bot.character.s.monsterhunt.c == 0) {
                 // Move to monsterhunter if we are finished the quest
                 await bot.smartMove("monsterhunter", { getWithin: 399 })
                 await bot.finishMonsterHuntQuest()
-                await bot.leaveParty()
                 await bot.getMonsterHuntQuest()
-                if (merchant) await bot.sendPartyRequest(merchant.character.id)
                 setTimeout(async () => { moveLoop() }, 500)
                 return
             }

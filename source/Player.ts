@@ -65,10 +65,10 @@ export class Player extends Observer {
         })
 
         // TODO: Create a CorrectionData object
-        this.socket.on("correction", (data: {x: number, y: number}) => {
+        this.socket.on("correction", (data: { x: number, y: number }) => {
             console.log("----- LOCATION CORRECTION -----")
             console.log(data)
-            
+
             this.updatePositions()
             this.character.x = data.x
             this.character.y = data.y
@@ -600,6 +600,10 @@ export class Player extends Observer {
         // Cancel all timeouts
         for (const timer of this.timeouts.values())
             clearTimeout(timer)
+    }
+
+    public async requestData(): Promise<void> {
+        this.socket.emit("send_updates")
     }
 
     /**
