@@ -5,16 +5,16 @@ export const NPC_INTERACTION_DISTANCE = 400
 export const DOOR_REACH_DISTANCE = 40
 export const TRANSPORTER_REACH_DISTANCE = 75
 
-// export const BASE = {
-//     h: 8,
-//     v: 7,
-//     vn: 2
-// }
 export const BASE = {
-    h: 1,
-    v: 1,
-    vn: 1
+    h: 8,
+    v: 7,
+    vn: 2
 }
+// export const BASE = {
+//     h: 1,
+//     v: 1,
+//     vn: 1
+// }
 
 export const ITEMS_TO_EXCHANGE: ItemName[] = [
     // General exchangables
