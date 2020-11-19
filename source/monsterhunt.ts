@@ -1969,6 +1969,7 @@ async function startPriest(bot: Priest) {
             if (bot.canUse("partyheal")) {
                 for (const bot of [priest, ranger, warrior, merchant]) {
                     if (!bot || !bot.party || !bot.party.list.includes(priest.character.id)) continue // Our priest isn't in the party!?
+                    if (bot.character.rip) continue // Party member is already dead
                     if (bot.character.hp < bot.character.max_hp * 0.5) {
                         // Someone in our party has low HP
                         await priest.partyHeal()
@@ -1980,7 +1981,7 @@ async function startPriest(bot: Priest) {
             console.error(e)
         }
 
-        setTimeout(async () => { partyHealLoop() }, 250)
+        setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), 10))
     }
     partyHealLoop()
 
