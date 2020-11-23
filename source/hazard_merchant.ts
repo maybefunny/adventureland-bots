@@ -193,7 +193,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
             if (bot.socket.disconnected) return
             if (!bot.hasItem("computer")) return // Don't give potions if we don't have a computer
 
-            for (const friend of [earthMer, earthPri, earthPri2]) {
+            for (const friend of [earthMer, earthiverse, earthPri, earthPri2]) {
                 if (!friend) continue
                 if (Tools.distance(bot.character, friend.character) > NPC_INTERACTION_DISTANCE) continue
 
@@ -429,7 +429,7 @@ async function startMerchant(bot: Merchant) {
 
                 if (targets.length) {
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
-                        for (const bot of [earthMer, earthPri, earthPri2]) {
+                        for (const bot of [earthMer, earthiverse, earthPri, earthPri2]) {
                             if (!bot) continue
                             bot.entities.delete(targets[0].id)
                         }
@@ -474,7 +474,7 @@ async function startPriest(bot: Priest) {
             if (bot.canUse("heal")) {
                 // Heal party members if they are close
                 let target: PingCompensatedPlayer
-                for (const friend of [earthMer, earthPri, earthPri2]) {
+                for (const friend of [earthMer, earthiverse, earthPri, earthPri2]) {
                     if (!friend) continue // Not up
                     if (friend.character.hp > friend.character.max_hp * 0.8) continue // Lots of health, no need to heal
                     if (Tools.distance(bot.character, friend.character) > bot.character.range) continue // Too far away to heal
@@ -520,7 +520,7 @@ async function startPriest(bot: Priest) {
 
                 if (targets.length) {
                     if (await Tools.isGuaranteedKill(bot.character, targets[0])) {
-                        for (const bot of [earthMer, earthPri, earthPri2]) {
+                        for (const bot of [earthMer, earthiverse, earthPri, earthPri2]) {
                             if (!bot) continue
                             bot.entities.delete(targets[0].id)
                         }
@@ -595,7 +595,7 @@ async function startPriest(bot: Priest) {
             }
 
             if (bot.canUse("partyheal")) {
-                for (const friend of [earthMer, earthPri, earthPri2]) {
+                for (const friend of [earthMer, earthiverse, earthPri, earthPri2]) {
                     if (!friend || !friend.party || !friend.party.list.includes(bot.character.id)) continue // We aren't in the party!?
                     if (friend.character.hp < friend.character.max_hp * 0.5) {
                         // Someone in our party has low HP
@@ -608,11 +608,10 @@ async function startPriest(bot: Priest) {
             console.error(e)
         }
 
-        setTimeout(async () => { partyHealLoop() }, 250)
+        setTimeout(async () => { partyHealLoop() }, Math.max(bot.getCooldown("partyheal"), 10))
     }
     partyHealLoop()
 }
-
 
 async function startRanger(bot: Ranger) {
     async function attackLoop() {

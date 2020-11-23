@@ -1,4 +1,4 @@
-import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, SPECIAL_MONSTERS, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
+import { ITEMS_TO_BUY, ITEMS_TO_EXCHANGE, ITEMS_TO_SELL, MERCHANT_ITEMS_TO_HOLD, NPC_INTERACTION_DISTANCE, PRIEST_ITEMS_TO_HOLD, RANGER_ITEMS_TO_HOLD, WARRIOR_ITEMS_TO_HOLD } from "./constants.js"
 import { CharacterModel } from "./database/characters/characters.model.js"
 import { EntityModel } from "./database/entities/entities.model.js"
 import { EntityData, HitData, PlayerData } from "./definitions/adventureland-server.js"
@@ -26,40 +26,9 @@ let priestTarget: MonsterName
 let merchant: Merchant
 // let merchantTarget: MonsterName
 
-async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promise<MonsterName> {
-    // Priority #1: Special Monsters
-    const entities = await EntityModel.find({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
-    for (const entity of entities) {
-        // Look in database of entities
-        if (!strategy[entity.type]) continue // No strategy
-        if (strategy[entity.type].requirePriest && bot.character.ctype !== "priest" && priestTarget !== entity.type) continue // Need priest
-        if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
-
-        return entity.type
-    }
-
-    // Priority #2: Monster Hunt Target
-    let monsterHuntTarget: MonsterName
-    let timeRemaining: number = Number.MAX_VALUE
-    for (const bot of [ranger, warrior, priest]) {
-        if (!bot.character.s.monsterhunt) continue // Character does not have a monster hunt
-        if (bot.character.s.monsterhunt.sn !== `${region} ${identifier}`) continue // We're not on the right server for this monster hunt
-        if (bot.character.s.monsterhunt.c == 0) continue // Character is finished the monster hunt
-        if (!strategy[bot.character.s.monsterhunt.id]) continue // We don't have a strategy for the monster
-        if (strategy[bot.character.s.monsterhunt.id].requirePriest && bot.character.ctype !== "priest" && priestTarget !== bot.character.s.monsterhunt.id) continue // We need a priest, but the priest is busy with something else
-
-        // If there are special monsters, do those first
-        if (SPECIAL_MONSTERS.includes(bot.character.s.monsterhunt.id)) return bot.character.s.monsterhunt.id
-
-        if (bot.character.s.monsterhunt.ms < timeRemaining) {
-            monsterHuntTarget = bot.character.s.monsterhunt.id
-            timeRemaining = bot.character.s.monsterhunt.ms
-        }
-    }
-    if (monsterHuntTarget) return monsterHuntTarget
-
+async function getTarget(): Promise<MonsterName> {
     // Priority #3: Scorpions, because why not
-    return "scorpion"
+    return "fireroamer"
 }
 
 async function generalBotStuff(bot: PingCompensatedPlayer) {
@@ -1044,7 +1013,7 @@ async function startRanger(bot: Ranger) {
         try {
             if (bot.socket.disconnected) return
 
-            const newTarget = await getTarget(bot, strategy)
+            const newTarget = await getTarget()
             if (newTarget !== rangerTarget) bot.stopSmartMove() // Stop the smart move if we have a new target
             rangerTarget = newTarget
         } catch (e) {
@@ -1723,7 +1692,7 @@ async function startPriest(bot: Priest) {
         try {
             if (bot.socket.disconnected) return
 
-            const newTarget = await getTarget(bot, strategy)
+            const newTarget = await getTarget()
             if (newTarget !== priestTarget) bot.stopSmartMove() // Stop the smart move if we have a new target
             priestTarget = newTarget
         } catch (e) {
@@ -2539,7 +2508,7 @@ async function startWarrior(bot: Warrior) {
         try {
             if (bot.socket.disconnected) return
 
-            const newTarget = await getTarget(bot, strategy)
+            const newTarget = await getTarget()
             if (newTarget !== warriorTarget) bot.stopSmartMove() // Stop the smart move if we have a new target
             warriorTarget = newTarget
         } catch (e) {
