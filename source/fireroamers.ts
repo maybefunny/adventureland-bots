@@ -1272,6 +1272,20 @@ async function startPriest(bot: Priest) {
                 await bot.heal(target.id)
             }
 
+            // Heal other party members
+            if (!target) {
+                for (const [, player] of bot.players) {
+                    if (player.hp > player.max_hp * 0.8) continue // Lots of health, no need to heal
+                    if (Tools.distance(bot.character, player) > bot.character.range) continue // Too far away to heal
+
+                    target = player
+                    break
+                }
+                if (target) {
+                    await bot.heal(target.id)
+                }
+            }
+
             if (!target) {
                 const targets: EntityData[] = []
                 for (const [, entity] of bot.entities) {
@@ -2545,7 +2559,7 @@ async function startWarrior(bot: Warrior) {
                 }
             }
             if (bot.character.hp < bot.character.max_hp * 0.25 // We are low on HP
-                || (bot.character.s.burned && bot.character.s.burned.intensity > bot.character.max_hp / 10) // We are burned
+                || (bot.character.s.burned && bot.character.s.burned.intensity > priest.character.attack * 0.9) // We are burned
                 || numTargetingAndClose > 3 // We have a lot of targets
                 || (numTargets > 0 && bot.character.c.town) // We are teleporting
                 || noStrategy // We don't have a strategy for the given monster
