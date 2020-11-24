@@ -2761,6 +2761,7 @@ async function startWarrior(bot: Warrior) {
 
 async function startMerchant(bot: Merchant) {
     bot.socket.on("request", (data: { name: string }) => {
+        console.log(`Received request from ${data.name}!`)
         bot.acceptPartyRequest(data.name)
     })
 
