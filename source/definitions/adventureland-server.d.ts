@@ -482,6 +482,7 @@ export type PlayerData = {
     mp_cost: number
     npc?: string
     owner: string
+    party?: string
     // TODO: Figure out what this is
     pdps: number
     q: {

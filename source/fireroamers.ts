@@ -807,7 +807,7 @@ async function startRanger(bot: Ranger) {
         fireroamer: {
             attack: async () => { return await tankAttackStrategy("fireroamer", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: 160, y: -675 }) },
-            equipment: { mainhand: "firebow", orb: "jacko" },
+            equipment: { mainhand: "firebow", orb: "orbofdex" },
             requirePriest: true
         },
         fvampire: {
@@ -1503,7 +1503,7 @@ async function startPriest(bot: Priest) {
         fireroamer: {
             attack: async () => { return await tankAttackStrategy("fireroamer", warrior.character.id) },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: 180, y: -675 }) },
-            equipment: { orb: "jacko" }
+            equipment: { orb: "orbofint" }
         },
         frog: {
             attack: async () => { return await defaultAttackStrategy("frog") },
@@ -1794,7 +1794,7 @@ async function startPriest(bot: Priest) {
             if (targets.length == 0) {
                 // Heal other party members
                 for (const [, player] of bot.players) {
-                    if (bot.party && bot.party.list && !bot.party.list.includes(player.id)) continue
+                    if (!player.party || !bot.party || !bot.party.list || !bot.party.list.includes(player.party)) continue // We aren't in the same party
                     if (player.hp > player.max_hp * 0.8) continue // Lots of health, no need to heal
                     if (Tools.distance(bot.character, player) > bot.character.range) continue // Too far away to heal
 
@@ -1945,15 +1945,29 @@ async function startPriest(bot: Priest) {
                 return
             }
 
+            // Check for our characters
             if (bot.canUse("partyheal")) {
                 for (const bot of [priest, ranger, warrior, merchant]) {
-                    if (!bot || !bot.party || !bot.party.list.includes(priest.character.id)) continue // Our priest isn't in the party!?
+                    if (!bot || !bot.party || !bot.party.list || !bot.party.list.includes(priest.character.id)) continue // Our priest isn't in the party!?
                     if (bot.character.rip) continue // Party member is already dead
                     if (bot.character.hp < bot.character.max_hp * 0.5) {
                         // Someone in our party has low HP
                         await priest.partyHeal()
                         break
                     }
+                }
+            }
+
+            // Check for other party members
+            if (bot.canUse("partyheal")) {
+                for (const [, player] of bot.players) {
+                    if (!player.party || !bot.party || !bot.party.list || !bot.party.list.includes(player.party)) continue // We aren't in the same party
+                    if (player.rip) continue // Party member is already dead
+                    if (player.hp > player.max_hp * 0.5) continue
+
+                    // Someone in our party has low HP
+                    await priest.partyHeal()
+                    break
                 }
             }
         } catch (e) {
@@ -2322,9 +2336,9 @@ async function startWarrior(bot: Warrior) {
             attackWhileIdle: true
         },
         fireroamer: {
-            attack: async () => { return await oneTargetAttackStrategy("fireroamer") },
+            attack: async () => { return await defaultAttackStrategy("fireroamer") },
             move: async () => { return await holdPositionMoveStrategy({ map: "desertland", x: 140, y: -675 }) },
-            equipment: { mainhand: "basher", orb: "jacko" },
+            equipment: { mainhand: "fireblade", offhand: "candycanesword", orb: "orbofstr" },
             requirePriest: true
         },
         fvampire: {
