@@ -1272,20 +1272,6 @@ async function startPriest(bot: Priest) {
                 await bot.heal(target.id)
             }
 
-            // Heal other party members
-            if (!target) {
-                for (const [, player] of bot.players) {
-                    if (player.hp > player.max_hp * 0.8) continue // Lots of health, no need to heal
-                    if (Tools.distance(bot.character, player) > bot.character.range) continue // Too far away to heal
-
-                    target = player
-                    break
-                }
-                if (target) {
-                    await bot.heal(target.id)
-                }
-            }
-
             if (!target) {
                 const targets: EntityData[] = []
                 for (const [, entity] of bot.entities) {
@@ -1727,7 +1713,6 @@ async function startPriest(bot: Priest) {
                 return
             }
 
-
             // Reasons to scare
             let numTargets = 0
             let numTargetingAndClose = 0
@@ -1805,6 +1790,17 @@ async function startPriest(bot: Priest) {
 
                 targets.push(id)
                 break
+            }
+            if (targets.length == 0) {
+                // Heal other party members
+                for (const [, player] of bot.players) {
+                    if (bot.party && bot.party.list && !bot.party.list.includes(player.id)) continue
+                    if (player.hp > player.max_hp * 0.8) continue // Lots of health, no need to heal
+                    if (Tools.distance(bot.character, player) > bot.character.range) continue // Too far away to heal
+
+                    targets.push(player.id)
+                    break
+                }
             }
             if (targets.length && bot.canUse("heal")) {
                 await bot.heal(targets[0])
