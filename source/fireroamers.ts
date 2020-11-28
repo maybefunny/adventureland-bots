@@ -2067,9 +2067,7 @@ async function startWarrior(bot: Warrior) {
                     }
                     if (d <= bot.G.skills.taunt.range && entity.type == mtype) inTauntRange.push(entity)
                 }
-                if (inTauntRange.length == 0 && numInAgitateRange > 0 && bot.canUse("agitate")) {
-                    await bot.agitate()
-                } else if (inTauntRange.length > 0 && bot.canUse("taunt")) {
+                if (inTauntRange.length > 0 && bot.canUse("taunt")) {
                     await bot.taunt(inTauntRange[0].id)
                 }
             }
