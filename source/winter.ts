@@ -1167,7 +1167,7 @@ async function startRanger(bot: Ranger) {
                 return
             }
 
-            // Priority #1: If it's christmas, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
+            // Priority #1: If it's winter, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
             if (bot.S.holidayseason
                 && (!bot.character.s || !bot.character.s.holidayspirit || bot.character.s.holidayspirit.ms < 60000)) {
                 await bot.smartMove("newyear_tree", { getWithin: 400 })
@@ -1848,7 +1848,7 @@ async function startPriest(bot: Priest) {
                 return
             }
 
-            // Priority #1: If it's christmas, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
+            // Priority #1: If it's winter, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
             if (bot.S.holidayseason
                 && (!bot.character.s || !bot.character.s.holidayspirit || bot.character.s.holidayspirit.ms < 60000)) {
                 await bot.smartMove("newyear_tree", { getWithin: 400 })
@@ -2611,7 +2611,7 @@ async function startWarrior(bot: Warrior) {
                 return
             }
 
-            // Priority #1: If it's christmas, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
+            // Priority #1: If it's winter, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
             if (bot.S.holidayseason
                 && (!bot.character.s || !bot.character.s.holidayspirit || bot.character.s.holidayspirit.ms < 60000)) {
                 await bot.smartMove("newyear_tree", { getWithin: 400 })
@@ -2660,7 +2660,7 @@ async function startMerchant(bot: Merchant) {
             let target: EntityData
             for (const [, entity] of bot.entities) {
                 if (entity.target == undefined) continue // We don't want to be the first to attack
-                if (!(["hen", "rooster", "mrgreen", "mrpumpkin"] as MonsterName[]).includes(entity.type)) continue // We only want to target these for Halloween
+                if (!(["hen", "rooster", "snowman"] as MonsterName[]).includes(entity.type)) continue // We only want to target these for winter
                 if (Tools.distance(bot.character, entity) > bot.character.range) continue // We're too far away to attack
 
                 target = entity
