@@ -205,6 +205,8 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 
     async function eventLoop() {
         try {
+            if (bot.socket.disconnected) return
+            
             // Winter event stuff
             if (bot.S.holidayseason) {
                 // Get the holiday buff
