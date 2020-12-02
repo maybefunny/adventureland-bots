@@ -2922,7 +2922,7 @@ async function run() {
             }
 
             // Look for the lowest hp special monster
-            let bestMonster = await EntityModel.findOne({ $or: [{ type: "snowman" }], lastSeen: { $gt: Date.now() - 15000 } }).sort({ hp: 1 }).lean().exec()
+            let bestMonster = await EntityModel.findOne({ $or: [{ type: "snowman" }], lastSeen: { $gt: Date.now() - 15000 }, serverIdentifier: { $ne: "PVP" } }).sort({ hp: 1 }).lean().exec()
             if (!bestMonster) {
                 bestMonster = {
                     type: null,
