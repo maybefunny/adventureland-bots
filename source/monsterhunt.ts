@@ -229,8 +229,11 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
 
     async function eventLoop() {
         try {
+            if (bot.socket.disconnected) return
+
             // Winter event stuff
-            if (bot.S.holidayseason) {
+            if (bot.S.holidayseason
+                && (!bot.character.s || !bot.character.s.holidayspirit)) {
                 // Get the holiday buff
                 for (const location of bot.locateNPCs("newyear_tree")) {
                     if (Tools.distance(bot.character, location) > NPC_INTERACTION_DISTANCE) continue
@@ -1262,7 +1265,7 @@ async function startRanger(bot: Ranger) {
 
             // Priority #2: If it's christmas, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
             if (bot.S.holidayseason
-                && (!bot.character.s || !bot.character.s.holidayspirit || bot.character.s.holidayspirit.ms < 60000)) {
+                && (!bot.character.s || !bot.character.s.holidayspirit)) {
                 await bot.smartMove("newyear_tree", { getWithin: 400 })
                 setTimeout(async () => { moveLoop() }, 500)
                 return
@@ -1970,7 +1973,7 @@ async function startPriest(bot: Priest) {
 
             // Priority #2: If it's christmas, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
             if (bot.S.holidayseason
-                && (!bot.character.s || !bot.character.s.holidayspirit || bot.character.s.holidayspirit.ms < 60000)) {
+                && (!bot.character.s || !bot.character.s.holidayspirit)) {
                 await bot.smartMove("newyear_tree", { getWithin: 400 })
                 setTimeout(async () => { moveLoop() }, 500)
                 return
@@ -2784,7 +2787,7 @@ async function startWarrior(bot: Warrior) {
 
             // Priority #2: If it's christmas, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
             if (bot.S.holidayseason
-                && (!bot.character.s || !bot.character.s.holidayspirit || bot.character.s.holidayspirit.ms < 60000)) {
+                && (!bot.character.s || !bot.character.s.holidayspirit)) {
                 await bot.smartMove("newyear_tree", { getWithin: 400 })
                 setTimeout(async () => { moveLoop() }, 500)
                 return
