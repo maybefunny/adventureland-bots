@@ -24,8 +24,19 @@ let merchant: Merchant
 // let merchantTarget: MonsterName
 
 async function getTarget(bot: PingCompensatedPlayer, strategy: Strategy): Promise<MonsterName> {
-    // Priority #1: Special Monsters
-    const entities = await EntityModel.find({ $or: [{ type: "snowman" }], serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
+    // Priority #1: Grinch
+    let entities = await EntityModel.find({ $or: [{ type: "grinch" }], serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
+    for (const entity of entities) {
+        // Look in database of entities
+        if (!strategy[entity.type]) continue // No strategy
+        if (strategy[entity.type].requirePriest && priestTarget !== entity.type) continue // Need priest
+        if (bot.G.monsters[entity.type].cooperative !== true && entity.target && ![ranger.character.id, warrior.character.id, priest.character.id, merchant.character.id].includes(entity.target)) continue // It's targeting someone else
+
+        return entity.type
+    }
+
+    // Priority #2: Snowmen
+    entities = await EntityModel.find({ $or: [{ type: "snowman" }], serverRegion: bot.server.region, serverIdentifier: bot.server.name, lastSeen: { $gt: Date.now() - 60000 } }).sort({ hp: 1 }).lean().exec()
     for (const entity of entities) {
         // Look in database of entities
         if (!strategy[entity.type]) continue // No strategy
@@ -820,6 +831,12 @@ async function startRanger(bot: Ranger) {
             move: async () => { return await specialMonsterMoveStrategy("greenjr") },
             attackWhileIdle: true
         },
+        grinch: {
+            attack: async () => { return await defaultAttackStrategy("grinch") },
+            move: async () => { return await specialMonsterMoveStrategy("grinch") },
+            equipment: { mainhand: "firebow", orb: "orbofdex" },
+            attackWhileIdle: true
+        },
         iceroamer: {
             attack: async () => { return await defaultAttackStrategy("iceroamer") },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 1512, y: 104 }) },
@@ -1493,6 +1510,11 @@ async function startPriest(bot: Priest) {
         greenjr: {
             attack: async () => { return await defaultAttackStrategy("greenjr") },
             move: async () => { return await specialMonsterMoveStrategy("greenjr") },
+            attackWhileIdle: true
+        },
+        grinch: {
+            attack: async () => { return await defaultAttackStrategy("grinch") },
+            move: async () => { return await specialMonsterMoveStrategy("grinch") },
             attackWhileIdle: true
         },
         iceroamer: {
@@ -2272,6 +2294,12 @@ async function startWarrior(bot: Warrior) {
             move: async () => { return await specialMonsterMoveStrategy("greenjr") },
             attackWhileIdle: true
         },
+        grinch: {
+            attack: async () => { return await defaultAttackStrategy("grinch") },
+            move: async () => { return await specialMonsterMoveStrategy("grinch") },
+            equipment: { mainhand: "basher", orb: "jacko" },
+            attackWhileIdle: true
+        },
         iceroamer: {
             attack: async () => { return await defaultAttackStrategy("iceroamer") },
             move: async () => { return await holdPositionMoveStrategy({ map: "winterland", x: 1532, y: 104 }) },
@@ -2925,16 +2953,19 @@ async function run() {
             }
 
             // Look for the lowest hp special monster
-            let bestMonster = await EntityModel.findOne({ $or: [{ type: "snowman" }], lastSeen: { $gt: Date.now() - 15000 }, serverIdentifier: { $ne: "PVP" } }).sort({ hp: 1 }).lean().exec()
+            let bestMonster = await EntityModel.findOne({ $or: [{ type: "grinch" }], lastSeen: { $gt: Date.now() - 15000 }, serverIdentifier: { $ne: "PVP" } }).sort({ hp: 1 }).lean().exec()
             if (!bestMonster) {
-                bestMonster = {
-                    type: null,
-                    _id: null,
-                    map: null,
-                    x: null,
-                    y: null,
-                    serverRegion: ranger === undefined ? "US" : ranger.server.region,
-                    serverIdentifier: ranger === undefined ? "I" : ranger.server.name
+                bestMonster = await EntityModel.findOne({ $or: [{ type: "snowman" }], lastSeen: { $gt: Date.now() - 15000 }, serverIdentifier: { $ne: "PVP" } }).sort({ hp: 1 }).lean().exec()
+                if (!bestMonster) {
+                    bestMonster = {
+                        type: null,
+                        _id: null,
+                        map: null,
+                        x: null,
+                        y: null,
+                        serverRegion: ranger === undefined ? "US" : ranger.server.region,
+                        serverIdentifier: ranger === undefined ? "I" : ranger.server.name
+                    }
                 }
             }
 
