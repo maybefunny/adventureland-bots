@@ -13,6 +13,7 @@ import { PingCompensatedPlayer } from "./PingCompensatedPlayer.js"
 import { Ranger } from "./Ranger.js"
 import { Pathfinder } from "./Pathfinder.js"
 import { Tools } from "./Tools.js"
+import { NPCModel } from "./database/npcs/npcs.model.js"
 
 let ranger: Ranger
 let rangerTarget: MonsterName
@@ -219,7 +220,7 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
             if (bot.socket.disconnected) return
 
             // Winter event stuff
-            if (bot.S.holidayseason
+            if (bot.S && bot.S.holidayseason
                 && (!bot.character.s || !bot.character.s.holidayspirit)) {
                 // Get the holiday buff
                 for (const location of bot.locateNPCs("newyear_tree")) {
@@ -684,6 +685,19 @@ async function startRanger(bot: Ranger) {
     }
     const specialMonsterMoveStrategy = async (mtype: MonsterName) => {
         try {
+            // Hang around kane while farming grinch
+            if (mtype == "grinch") {
+                const grinch = bot.getNearestMonster("grinch")
+                if (grinch) {
+                    await bot.smartMove(grinch.monster, { getWithin: bot.character.range / 2 })
+                } else {
+                    const kane = await NPCModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, name: "Kane" }).lean().exec()
+                    if (kane) {
+                        await bot.smartMove(kane, { getWithin: bot.character.range })
+                    }
+                }
+            }
+
             // Look in nearby entities for monster
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
@@ -1188,7 +1202,7 @@ async function startRanger(bot: Ranger) {
             }
 
             // Priority #1: If it's winter, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
-            if (bot.S.holidayseason
+            if (bot.S && bot.S.holidayseason
                 && (!bot.character.s || !bot.character.s.holidayspirit)) {
                 await bot.smartMove("newyear_tree", { getWithin: 400 })
                 setTimeout(async () => { moveLoop() }, 500)
@@ -1377,6 +1391,19 @@ async function startPriest(bot: Priest) {
     }
     const specialMonsterMoveStrategy = async (mtype: MonsterName) => {
         try {
+            // Hang around kane while farming grinch
+            if (mtype == "grinch") {
+                const grinch = bot.getNearestMonster("grinch")
+                if (grinch) {
+                    await bot.smartMove(grinch.monster, { getWithin: bot.character.range / 2 })
+                } else {
+                    const kane = await NPCModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, name: "Kane" }).lean().exec()
+                    if (kane) {
+                        await bot.smartMove(kane, { getWithin: bot.character.range })
+                    }
+                }
+            }
+
             // Look in nearby entities for monster
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
@@ -1874,7 +1901,7 @@ async function startPriest(bot: Priest) {
             }
 
             // Priority #1: If it's winter, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
-            if (bot.S.holidayseason
+            if (bot.S && bot.S.holidayseason
                 && (!bot.character.s || !bot.character.s.holidayspirit)) {
                 await bot.smartMove("newyear_tree", { getWithin: 400 })
                 setTimeout(async () => { moveLoop() }, 500)
@@ -2165,6 +2192,19 @@ async function startWarrior(bot: Warrior) {
     }
     const specialMonsterMoveStrategy = async (mtype: MonsterName) => {
         try {
+            // Hang around kane while farming grinch
+            if (mtype == "grinch") {
+                const grinch = bot.getNearestMonster("grinch")
+                if (grinch) {
+                    await bot.smartMove(grinch.monster, { getWithin: bot.character.range / 2 })
+                } else {
+                    const kane = await NPCModel.findOne({ serverRegion: bot.server.region, serverIdentifier: bot.server.name, name: "Kane" }).lean().exec()
+                    if (kane) {
+                        await bot.smartMove(kane, { getWithin: bot.character.range })
+                    }
+                }
+            }
+            
             // Look in nearby entities for monster
             for (const [, entity] of bot.entities) {
                 if (entity.type !== mtype) continue
@@ -2643,7 +2683,7 @@ async function startWarrior(bot: Warrior) {
             }
 
             // Priority #1: If it's winter, and we don't have (or are about to run out of) holiday spirit, go get some at the tree
-            if (bot.S.holidayseason
+            if (bot.S && bot.S.holidayseason
                 && (!bot.character.s || !bot.character.s.holidayspirit)) {
                 await bot.smartMove("newyear_tree", { getWithin: 400 })
                 setTimeout(async () => { moveLoop() }, 500)
@@ -2953,9 +2993,9 @@ async function run() {
             }
 
             // Look for the lowest hp special monster
-            let bestMonster = await EntityModel.findOne({ $or: [{ type: "grinch" }], lastSeen: { $gt: Date.now() - 15000 }, serverIdentifier: { $ne: "PVP" } }).sort({ hp: 1 }).lean().exec()
+            let bestMonster = await EntityModel.findOne({ $or: [{ type: "grinch" }], lastSeen: { $gt: Date.now() - 30000 }, serverIdentifier: { $ne: "PVP" } }).sort({ hp: 1 }).lean().exec()
             if (!bestMonster) {
-                bestMonster = await EntityModel.findOne({ $or: [{ type: "snowman" }], lastSeen: { $gt: Date.now() - 15000 }, serverIdentifier: { $ne: "PVP" } }).sort({ hp: 1 }).lean().exec()
+                bestMonster = await EntityModel.findOne({ $or: [{ type: "snowman" }], lastSeen: { $gt: Date.now() - 30000 }, serverIdentifier: { $ne: "PVP" } }).sort({ hp: 1 }).lean().exec()
                 if (!bestMonster) {
                     bestMonster = {
                         type: null,
