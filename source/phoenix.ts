@@ -72,9 +72,10 @@ async function generalBotStuff(bot: PingCompensatedPlayer) {
                     const q = item.q === undefined ? 1 : item.q
 
                     // Join new giveaways
-                    if (item.giveaway && bot.character.ctype == "merchant" && item.list && item.list.includes(bot.character.id)) {
+                    if (item.giveaway && bot.character.ctype == "merchant" && (!item.list || !item.list.includes(bot.character.id))) {
                         // TODO: Move this to a function
                         bot.socket.emit("join_giveaway", { slot: slot, id: player.id, rid: item.rid })
+                        continue
                     }
 
                     // Buy if we can resell to NPC for more money
