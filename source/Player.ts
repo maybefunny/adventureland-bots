@@ -101,6 +101,10 @@ export class Player extends Observer {
             } else if (data.reason == undefined) {
                 // This probably meant that the entity
                 this.entities.delete(data.id)
+            } else if (data.reason == "invis") {
+                // This probably means the rogue went invisible 
+                this.players.delete(data.id)
+                this.entities.delete(data.id)
             } else {
                 const player = this.players.get(data.id)
                 if (player) {
